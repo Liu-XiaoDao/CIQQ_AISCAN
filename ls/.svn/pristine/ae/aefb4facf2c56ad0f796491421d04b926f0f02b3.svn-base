@@ -1,0 +1,26 @@
+<?php include VIEWPATH.'front/__header.php';?>
+<?php
+if($islogin==1){}else exit("<script language='javascript'>window.location.href='/front/login';</script>");
+?>
+  <div class="container" style="padding-top:70px;">
+    <div class="col-sm-12 col-md-10 center-block" style="float: none;">
+
+
+<div class="panel panel-primary">
+<div class="panel-heading"><h3 class="panel-title">账户充值--您当前账户余额为<?php echo $user['account'];?></h3></div>
+<div class="panel-body">
+	<div class="form-group" style="text-align: center;">
+	  <h3 class="panel-title">请扫描此二维码转账</h3>
+	  <img src="/imgs/zhifu.png">
+	</div>
+	<br/>
+    <div class="panel panel-primary">
+        <div class="panel-heading" style="background: red;"><h3 class="panel-title">注意:</h3></div>
+			<ul class="list-group">
+				<li class="list-group-item">转账时请备注您的用户名</li>
+				<li class="list-group-item">半小时没有到帐请联系客服QQ:2914288214</li>
+				<li class="list-group-item">收款账户为:xxx,请留意</li>
+    		</ul>
+     </div>
+</div>
+</div>

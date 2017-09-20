@@ -1,0 +1,268 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+?>
+
+<?php
+
+@header('Content-Type: text/html; charset=UTF-8');
+?>
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title><?php echo $conf['sitename']?> - <?php echo $conf['title']?></title>
+  <meta name="keywords" content="<?php echo $conf['keywords']?>">
+  <meta name="description" content="<?php echo $conf['description']?>">
+<link href="http://cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+  <link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
+	<!-- Vendor CSS-->
+	<link href="//cdn.qqzzz.net/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+	<link href="//cdn.qqzzz.net/assets/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+
+	<link href="//cdn.qqzzz.net/assets/plugins/pjax/pjax.css" rel="stylesheet" />
+<link href="//cdn.qqzzz.net/assets/css/style2.css" rel="stylesheet" />
+	<!-- end: CSS file-->
+  <script src="//cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+  <script src="//cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="//cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="//cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+<STYLE type="text/css">
+	body{cursor:url('images/XSSB-1.cur'), auto;}
+	a{cursor:url('images/XSSB-2.cur'), auto;}
+body,.main{
+background:#ecedf0 url("/bj.png") fixed;
+background-repeat:repeat;}
+</STYLE>
+</head>
+<body>
+<br>
+<div class="col-lg-6 col-md-8 col-sm-10 col-xs-12 center-block" role="main">
+<div class="panel panel-default">
+<div class="panel-body" style="text-align: center;background: black;">
+<img src="imgs/logo.png">
+</div>
+</div>
+<div class="modal fade" align="left" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel"><?php echo $conf['sitename']?></h4>
+      </div>
+      <div class="modal-body">
+	  <?php echo $conf['modal']?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel panel-info">
+<div class="list-group-item reed" style="background:#64b2ca;"><h3 class="panel-title"><font color="#fff"><i class="fa fa-volume-up"></i>&nbsp;&nbsp;<b><?php echo $conf['sitename']?></b></font></h3></div>
+<div class="list-group-item reed"><marquee scrollAmount="8" direction="left" Align="Middle" style="font-weight: bold;line-height: 20px;font-size: 20px;color: #177D06;">
+				全 网 所 有 Q Q 微 信 论 坛 企 业 名 录 营 销 软 件 免 费 赠 送 每 月 更 新</marquee></div>
+			<div class="list-group-item reed"><span class="btn btn-danger btn-xs">1</span> 单次套餐6小时内请勿重复下单，重复下单后果自负！
+</div>
+<div class="list-group-item reed"><span class="btn btn-danger btn-xs">2</span> 大批量购买请直接联系客服<a target="_blank" href="http://www.neibutongdao.com" class="btn btn-danger btn-xs">点击联系客服</a>
+</div>
+<div class="list-group-item reed"><span class="btn btn-success btn-xs">3</span> 当天提交的订单10分钟开始 24小时自助下单。
+</div>
+<div class="list-group-item reed"><span class="btn btn-danger btn-xs">4</span> 本站默认开启互动功能.若不需要互动请购买无互动套餐！
+</div>
+<div class="list-group-item reed"><span class="btn btn-success btn-xs">5</span> 客服QQ:<a style="color: green;" target="_blank" href="http://wpa.qq.com/msgrd?v=3&amp;uin=2914288214&amp;site=qq&amp;menu=yes">2914288214</a>
+</div>
+<div class="list-group-item reed"><span class="btn btn-info btn-xs">6</span>
+法务联系:<a style="color: green;" target="_blank" href="http://wpa.qq.com/msgrd?v=3&amp;uin=2914288214&amp;site=qq&amp;menu=yes">2914288214</a>
+</div><table class="table table-bordered">
+<tbody>
+<tr>
+
+</tr>
+</tbody>
+</table>
+</div>
+<div class="panel panel-info"><div class="modal-body">如果您在下单的过程中受到腾讯拦截，请使用浏览器打开本网站进行下单！下单前请看第一次购买必看。</div></div>
+<div class="panel panel-info">
+<ul class="nav nav-tabs">
+<li class="active"><a href="#onlinebuy" data-toggle="tab">在线支付下单</a></li>
+
+<li><a href="#query" data-toggle="tab">订单进度查询</a></li>
+</ul>
+<div class="list-group-item">
+<div id="myTabContent" class="tab-content">
+<div class="tab-pane fade in active" id="onlinebuy">
+<div class="form-group">
+<div class="input-group"><div class="input-group-addon">选择商品</div>
+<select name="tid" id="tid" class="form-control" onchange="getPoint();"><?php echo $select?></select></div></div>
+<div class="form-group">
+<div class="input-group"><div class="input-group-addon">商品价格</div>
+<input type="text" name="need" id="need" class="form-control" disabled/></div></div>
+
+<div class="form-group">
+<div class="input-group"><div class="input-group-addon">购买数量</div>
+<input type="number" class="form-control" name="buynum" id="buynum" value="" required></div></div>
+
+<div class="form-group">
+<div class="input-group"><div class="input-group-addon">联系ＱＱ</div>
+<input type="text" name="qq" id="qq1" value="" class="form-control" placeholder="(您够买的商品将会以邮件的形式发到此邮箱)" required/></div></div>
+
+<div class="form-group">
+<div class="input-group"><div class="input-group-addon">备&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;注</div>
+<input type="text" name="beizhu" id="beizhu" value="" class="form-control" placeholder="(请填写您的备注信息)" required/></div></div>
+
+
+
+<div id="pay_frame" class="form-group text-center" style="display:none;">
+<div class="form-group">
+<div class="input-group">
+<div class="input-group-addon">订单编号</div>
+<input class="form-control" name="orderid" id="orderid" value="" disabled></div></div>
+<div class="form-group">
+<div class="input-group">
+<div class="input-group-addon">共需支付</div>
+<input class="form-control" name="needs" id="needs" value="" disabled></div></div>
+<div class="alert alert-success">订单保存成功，请点击以下链接支付！</div>
+
+
+
+<?php
+if($conf['alipay_api'])echo '<button type="submit" class="btn btn-default" id="buy_alipay"><img src="assets/icon/alipay.ico" class="logo">支付宝</button>&nbsp;';
+// if($conf['qqpay_api'])echo '<button type="submit" class="btn btn-default" id="buy_qqpay"><img src="assets/icon/qqpay.ico" class="logo">QQ钱包</button>&nbsp;';
+if($conf['wxpay_api'])echo '<button type="submit" class="btn btn-default" id="buy_wxpay"><img src="assets/icon/wechat.ico" class="logo">微信支付</button>&nbsp;';
+// if($conf['tenpay_api'])echo '<button type="submit" class="btn btn-default" id="buy_tenpay"><img src="assets/icon/tenpay.ico" class="logo">财付通</button>&nbsp;';
+?>
+</div>
+<input type="submit" id="submit_buy" class="btn btn-primary btn-block" value="立即购买">
+<br>
+<a class="btn btn-block btn-success" href="#" data-toggle="modal" data-target="#gmbk"><b>第一次购买必看,点这里了解</b></a>
+
+</div>
+
+
+			
+<div class="tab-pane fade in" id="query">
+<div class="form-group">
+<div class="input-group"><div class="input-group-addon">请输入ID</div>
+<input type="text" name="qq" id="qq3" value="<?php echo $qq?>" class="form-control" required/></div></div>
+<input type="submit" id="submit_query" class="btn btn-primary btn-block" value="立即查询">
+<div id="result2" class="form-group text-center" style="display:none;">
+<table class="table table-striped">
+<thead><tr><th>ＱＱ</th><th>
+商品名称</th><th>
+购买时间</th><th>
+状态</th></tr></thead>
+					<tbody id="list">
+					</tbody>
+					</table>
+		</div>
+			</div>
+			</div>
+		</div>
+		</div>		
+
+
+
+
+<script type="text/javascript">
+function getPoint() {
+	var price = $('#tid option:selected').attr('price');
+	$('#need').val('￥'+price);
+}
+getPoint();
+$(document).ready(function(){
+	$("#submit_buy").click(function(){
+		var tid=$("#tid").val();
+		var buynum=$("#buynum").val();
+		var qq=$("#qq1").val();
+		var beizhu=$("#beizhu").val();
+
+		if(qq=='' || buynum=='' || tid=='' || beizhu==''){alert('请确保每项不能为空！');return false;}
+		if(qq.length<5 || qq.length>11){alert('请输入正确的QQ号！');return false;}
+		$('#pay_frame').hide();
+		$('#submit_buy').val('Loading');
+		$.ajax({
+			type : "POST",
+			url : "ajax/pay",
+			data : {tid:tid,qq:qq,buynum:buynum,beizhu:beizhu},
+			dataType : 'json',
+			success : function(data) {
+				if(data.code == 0){
+					$('#tid').attr("disabled",true);
+					$('#qq1').attr("disabled",true);
+					$('#buynum').attr("disabled",true);
+					$('#beizhu').attr("disabled",true);
+					$('#submit_buy').hide();
+					$('#orderid').val(data.trade_no);
+					$('#needs').val("￥"+data.need);
+					$("#pay_frame").slideDown();
+				}else{
+					alert(data.msg);
+				}
+				$('#submit_buy').val('立即购买');
+			} 
+		});
+	});
+	
+	$("#submit_query").click(function(){
+		var qq=$("#qq3").val();
+		if(qq==''){alert('请确保每项不能为空！');return false;}
+		$('#submit_query').val('Loading');
+		$('#result2').hide();
+		$('#list').html('');
+		$.ajax({
+			type : "POST",
+			url : "ajax/query",
+			data : {qq:qq},
+			dataType : 'json',
+			success : function(data) {
+				if(data.code == 0){
+					$.each(data.data, function(i, item){
+						status=item.status==1?'<font color=green>订单处理中</font>':'<font color=blue>待处理</font>';
+						$('#list').append('<tr tid='+item.tid+'><td>'+item.qq+'</td><td>'+item.name+'</td><td>'+item.addtime+'</td><td>'+status+'</td></tr>');
+					});
+					$("#result2").slideDown();
+				}else{
+					alert(data.msg);
+				}
+				$('#submit_query').val('立即查询');
+			} 
+		});
+	});
+$("#buy_alipay").click(function(){
+	var orderid=$("#orderid").val();
+	window.location.href='other/submit.php?type=alipay&orderid='+orderid;
+});
+$("#buy_qqpay").click(function(){
+	var orderid=$("#orderid").val();
+	window.location.href='other/submit.php?type=qqpay&orderid='+orderid;
+});
+$("#buy_wxpay").click(function(){
+	var orderid=$("#orderid").val();
+	window.location.href='other/submit.php?type=wxpay&orderid='+orderid;
+});
+$("#buy_tenpay").click(function(){
+	var orderid=$("#orderid").val();
+	window.location.href='other/submit.php?type=tenpay&orderid='+orderid;
+});
+
+var isModal=<?php echo empty($conf['modal'])?'false':'true';?>;
+if( !$.cookie('op') && isModal==true){
+	$('#myModal').modal({
+		keyboard: true
+	});
+	var cookietime = new Date(); 
+	cookietime.setTime(cookietime.getTime() + (10*60*1000));
+	$.cookie('op', false, { expires: cookietime });
+}
+});
+</script>
+</div>
+</div>
+</body>
+</html>

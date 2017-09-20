@@ -1,0 +1,193 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Apiorder extends CI_Controller{
+
+	public $islogin = 0;
+
+	public function __construct(){
+		parent::__construct();
+
+        if(isset($_SESSION['admin_token']))
+		{
+			$this->islogin=1;		
+		}else{
+			$this->islogin=0;
+		}
+
+	}
+
+
+	public function index($page = 1)
+	{
+		
+
+
+		//订单数量
+		$numrows=$this->db->query("SELECT count(*) as numrows from apiorder")->row()->numrows;
+		//完成
+		$ondate=$this->db->query("select count(*) as wcount from apiorder where status=2")->row()->wcount;
+
+		$con='系统共有 <b>'.$numrows.'</b> 个订单，其中已完成的有 <b>'.$ondate.'</b> 个。';
+		
+
+   	
+  		$page_size=10; //每页显示数量
+        $start=($page-1)*$page_size;//每页从第几条开始
+        $limit=" limit {$start},{$page_size}";//
+    	$apiorders=$this->db->query("SELECT * FROM apiorder WHERE 1 order by addtime asc {$limit}")->result_array();
+
+
+    	//获取分页标记
+        $data['pager'] = $this->get_pager(array(
+            'record_count'  => $numrows,
+            'page_size'     => $page_size,
+            'now_page'     => $page,
+        ));
+
+
+    	$data['con'] = $con;
+		$data['title'] = 'api订单管理';
+		$data['islogin'] = $this->islogin;
+    	$data['c'] = 'api';
+    	$data['apiorders'] = $apiorders;
+    	$this->load->view('admin/apiorder@index',$data);
+	}
+
+
+	// public function query($page = 1)
+	// {
+	// 	$sql = " `qq`=".$_GET['kw'];//要搜索的qq
+
+	// 	$shuas=$this->db->query("SELECT * FROM shua_tools WHERE 1 order by sort asc")->result_array();
+	// 	$shua_func = array();
+	// 	$select = "";
+	// 	foreach ($shuas as $key => $shua) {
+	// 		$shua_func[$shua['tid']] = $shua['name'];
+	// 		$select.='<option value="'.$shua['tid'].'">'.$shua['name'].'</option>';
+	// 	}
+	// 	//订单总数
+	// 	$numrows=$this->db->query("SELECT count(*) as numrows from shua_orders WHERE{$sql}")->row()->numrows;
+	// 	//
+
+	// 	$con='包含 '.$_GET['kw'].' 的共有 <b>'.$numrows.'</b> 个订单';
+		
+	// 	$page_size=10; //每页显示数量
+ //        $start=($page-1)*$page_size;//每页从第几条开始
+ //        $limit=" limit {$start},{$page_size}";//
+ //    	$orders=$this->db->query("SELECT * FROM shua_orders WHERE{$sql}  {$limit}")->result_array();
+
+
+ //    	//获取分页标记
+ //        $data['pager'] = $this->get_pager(array(
+ //            'record_count'  => $numrows,
+ //            'page_size'     => $page_size,
+ //            'now_page'     => $page,
+ //        ));
+
+
+	// 	$data['shua_func'] = $shua_func;
+	// 	$data['select'] = $select;
+ //    	$data['con'] = $con;
+	// 	$data['title'] = '订单管理';
+	// 	$data['islogin'] = $this->islogin;
+ //    	$data['c'] = 'order';
+ //    	// $data['pages'] = $pages;
+ //    	$data['orders'] = $orders;
+ //    	$this->load->view('admin/order',$data);
+	// }
+
+
+	// public function status()
+	// {
+	// 	if($this->islogin==1){}else exit('{"code":301,"msg":"未登录"}');
+
+	// 	$id=intval($_GET['id']);
+	// 	$status=intval($_GET['status']);
+
+	// 	if($status==4){
+	// 		if($this->db->query("DELETE FROM shua_orders WHERE id='$id'"))
+	// 			exit('{"code":200}');
+	// 		else
+	// 			exit('{"code":400,"msg":"删除订单失败！'.$this->db->_error_message().'"}');
+	// 	}else{
+	// 		if($this->db->query("update shua_orders set status='$status' where id='{$id}'"))
+	// 			exit('{"code":200}');
+	// 		else
+	// 			exit('{"code":400,"msg":"修改订单失败！'.$this->db->_error_message().'"}');
+	// 	}
+	// }
+
+
+	public function detail($api_trade_no){
+		$apiordersql = "select * from apiorder where api_trade_no='{$api_trade_no}' limit 1";
+		$apiorder = $this->db->query($apiordersql)->row_array();
+
+		$api_order = $apiorder['api_order'];
+
+
+
+
+
+
+		$apiusersql = "select * from apiuser where isactive=1 limit 1";
+	 	$apiuser = $this->db->query($apiusersql)->row_array();
+
+
+	 	// 1. 初始化
+ 		$moneych = curl_init();
+ 		// 2. 设置选项，包括URL
+ 		curl_setopt($moneych,CURLOPT_URL,"http://api.qqhao456.com/api.php?u=".$apiuser['username']."&s=".$apiuser['password']."&order=".$api_order);
+ 		curl_setopt($moneych,CURLOPT_RETURNTRANSFER,1);
+ 		curl_setopt($moneych,CURLOPT_HEADER,0);
+ 		// 3. 执行并获取HTML文档内容
+ 		$moneyoutput = curl_exec($moneych);
+ 		if($moneyoutput === FALSE ){
+ 			echo "CURL Error:".curl_error($moneych);
+ 		}
+
+
+
+ 		$out=array();
+    	preg_match_all("/({.*})({.*})/U",$moneyoutput,$out);
+    	$order1 = $out[1][0];
+    	$order2 = $out[2][2];
+
+ 		$order1=str_replace("{","[",$order1);
+ 		$order1=str_replace("}","]",$order1);
+
+ 		$order2=str_replace("{","[",$order2);
+ 		$order2=str_replace("}","]",$order2);
+
+
+ 		$order1array=json_decode($order1);//json转数组
+ 		$order2array=json_decode($order2);//json转数组
+ 
+
+ 		$api_order_info="解封订单:有效数量为".$order1array[1].",订单金额为".$order1array[2];
+
+ 		foreach ($order2array as $key => $value) {
+ 			$statusnum=array();
+    		preg_match_all("/(.*)----(.*)/U",$value,$statusnum);
+    		print_r($statusnum);
+ 		}
+
+ 		// 4. 释放curl句柄
+ 		curl_close($moneych);
+
+
+
+
+exit();
+
+		$data['title'] = 'api订单详情';
+		$data['islogin'] = $this->islogin;
+    	$data['c'] = 'order';
+    	$data['order'] = $order;
+    	$data['qqs'] = $qqs;
+    	$this->load->view('admin/order@detail',$data);
+	}
+
+
+
+}

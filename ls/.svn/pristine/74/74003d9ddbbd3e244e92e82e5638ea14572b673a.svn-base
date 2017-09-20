@@ -1,0 +1,56 @@
+<?php
+
+//当前页参数位置
+$config['uri_segment'] = 3;
+
+//左右显示几个其他页
+$config['num_links'] = 5;
+
+$config['use_page_numbers'] = TRUE;
+
+$config['page_query_string'] = FALSE;
+
+$config['reuse_query_string'] = TRUE;
+
+$config['prefix'] = '';
+
+$config['suffix'] = '.html';
+
+$config['use_global_url_suffix'] = FALSE;
+
+
+$config['full_tag_open'] = '<ul class="pagination">';
+$config['full_tag_close'] = '</ul>';
+
+//第一页
+// $config['first_link'] = '&lt;&lt;';
+$config['first_link'] = '首页';
+$config['first_tag_open'] = '<li><a>';
+$config['first_tag_close'] = '</a></li>';
+$config['first_url'] = '/admin/';
+
+//最后页
+$config['last_link'] = '&gt;&gt;';
+$config['last_tag_open'] = '<li>';
+$config['last_tag_close'] = '</li>';
+
+//下一页
+$config['next_link'] = '&gt;';
+$config['next_tag_open'] = '<li>';
+$config['next_tag_close'] = '</li>';
+
+//上一页
+$config['prev_link'] = 'zuo';
+$config['prev_tag_open'] = '<li>';
+$config['prev_tag_close'] = '</li>';
+
+//当前页
+$config['cur_tag_open'] = '<li  class="disabled"><a>';
+$config['cur_tag_close'] = '</a></li>';
+
+//其他页
+$config['display_pages'] = TRUE;
+$config['num_tag_open'] = '<li>';
+$config['num_tag_close'] = '</li>';
+
+?>

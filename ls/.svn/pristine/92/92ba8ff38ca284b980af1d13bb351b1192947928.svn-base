@@ -1,0 +1,456 @@
+<?php
+/*
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Ajax extends CI_Controller {
+
+	
+	public function pay()
+	{
+		//获取用户购买的东西
+		$tid=intval($_POST['tid']);
+		$buynum=intval($_POST['buynum']);
+		$beizhu=daddslashes($_POST['beizhu']);
+
+		if (isset($_SESSION['user'])&&isset($_SESSION['style'])&&$_SESSION['style']===2) {
+
+			//获取最新用户信息,下面会判断余额用
+			$sql = "select * from users where username= ? and isable = 1 limit 1";
+			$datasql = array($_SESSION['username']);
+			$user = $this->db->query($sql,$datasql)->row_array();
+			//插入语句写入数据库,这是上面那条sql,在这是因为怕影响下面的affect
+    		$this->logs->append($this->db->last_query());
+        	$this->logs->save(4);
+		 	//查询此类商品是否存在
+		 	$tool=$this->db->query("select * from shua_tools where tid='$tid' limit 1")->row_array();
+		 	//插入语句写入数据库,这是上面那条sql,在这是因为怕影响下面的affect
+    		$this->logs->append($this->db->last_query());
+        	$this->logs->save(4);
+
+
+		 	if($tool && $tool['active']==1){
+		 		//检查商品库存是否足够
+				if($tool['stock']<$buynum)
+		 			exit('{"code":-1,"msg":"库存不足,请联系客服！"}');				
+		 		else
+		 		{
+		 			$uid = $_SESSION['user']['id'];
+		 			$uname = $_SESSION['user']['username'];
+		 			$date = date("Y-m-d H:i:s");
+		 			$need=$tool['price']*$buynum;
+		 			$trade_no=date("YmdHis").rand(111,999);
+
+		 			
+		 			if ($user['account'] < $need) {
+		 				//提示用户余额不足
+		 				exit('{"code":-1,"msg":"您的余额不足！"}');
+		 			} else {
+
+		 				//插入订单
+		 				$sql="insert into `shua_pay` (`trade_no`,`tid`,`name`,`money`,`uid`,`uname`,`addtime`,`status`,`count`,`info`) values ('".$trade_no."','".$tid."','".$tool['name']."','".$need."','".$uid."','".$uname."','".$date."','0',".$buynum.",'".$beizhu."')";
+		 				$this->db->query($sql);
+
+
+		 				if ($this->db->affected_rows()) {
+		 					//插入语句写入数据库,这是上面那条sql,在这是因为怕影响下面的affect
+    						$this->logs->append($this->db->last_query());
+        					$this->logs->save(1);
+
+		 					//若订单生成成功,则减少用户的平台余额
+		 					$jaccoutsql = "update users set account=account-{$need} where id='{$uid}'";
+		 					$this->db->query($jaccoutsql);
+
+		 					if ($this->db->affected_rows()) {
+		 						//插入语句写入数据库,这是上面那条sql,在这是因为怕影响下面的affect
+    							$this->logs->append($this->db->last_query());
+        						$this->logs->save(3);
+
+		 						//若是扣款成功,则进行下一步,查号
+		 						$chsql = "select * from goods where tid={$tid} and is_sell=0 limit {$buynum}";
+		 						$qqarray = $this->db->query($chsql)->result_array();
+		 						//插入语句写入数据库,这是上面那条sql,在这是因为怕影响下面的affect
+    							$this->logs->append($this->db->last_query());
+        						$this->logs->save(4);
+
+		 						if (count($qqarray)==$buynum) {
+		 							//查询账号成功
+		 							foreach ($qqarray as $key => $qq) {
+		 								//改变qq状态设置为已售
+		 								$is_sellsql = "update goods set is_sell=1 where gid='{$qq['gid']}'";
+		 								$this->db->query($is_sellsql);
+		 								//插入语句写入数据库,这是上面那条sql,在这是因为怕影响下面的affect
+    									$this->logs->append($this->db->last_query());
+        								$this->logs->save(3);
+
+		 								//账号加入订单账号表
+		 								$insert_trade_qq="insert into `trade_qq` (`trade_no`,`qqnum`) values('{$trade_no}','{$qq['qqnum']}')";
+		 								$this->db->query($insert_trade_qq);
+		 								//插入语句写入数据库,这是上面那条sql,在这是因为怕影响下面的affect
+    									$this->logs->append($this->db->last_query());
+        								$this->logs->save(1);
+
+
+		 								//该账号类型库存减1
+		 								$stocksql = "update shua_tools set stock=stock-1 where tid='{$tid}'";
+		 								$this->db->query($stocksql);
+		 								//插入语句写入数据库,这是上面那条sql,在这是因为怕影响下面的affect
+    									$this->logs->append($this->db->last_query());
+        								$this->logs->save(3);
+		 							}
+		 							//付款后就显示已完成,这个就不判断了
+		 							$upstatus = "update shua_pay set status=1 where trade_no={$trade_no}";
+		 							$this->db->query($upstatus);
+		 							//插入语句写入数据库,这是上面那条sql,在这是因为怕影响下面的affect
+    								$this->logs->append($this->db->last_query());
+        							$this->logs->save(3);
+
+		 							exit('{"code":0,"msg":"下单成功！","trade_no":"'.$trade_no.'"}');
+		 						} else {
+		 							exit('{"code":-1,"msg":"查询出所需数量账号失败！"}');
+		 						}
+
+		 					} else {
+		 						//插入语句写入数据库,这是上面那条sql,在这是因为怕影响下面的affect
+    							$this->logs->append($this->db->last_query());
+        						$this->logs->save(3);
+		 						//若是影响行数为0,则用户月减少失败
+		 						exit('{"code":-1,"msg":"用户余额扣款失败！"}');
+		 					}
+		 				} else {
+		 					//若是影响行数为0,则订单生成失败,
+		 					exit('{"code":-1,"msg":"提交订单失败！"}');
+		 				}
+		 			}
+		 		}
+		 	}else{
+		 		exit('{"code":-2,"msg":"该商品不存在"}');
+		 	}
+		 } else {
+		 	exit('{"code":-3,"msg":"请登录后购买"}');
+		 }
+	}
+
+
+	public function apipay()
+	{
+		 //获取用户购买的东西
+		 $aid=intval($_POST['aid']);
+		 $apiqqs=daddslashes($_POST['apiqqs']);
+		 $apibeizhu=daddslashes($_POST['apibeizhu']);
+		 //qq号分组,计算解封数量
+		 $qqarray = explode(",",$apiqqs);
+		 $buynum = count($qqarray);
+
+
+		 //检测是否登录
+		 if (isset($_SESSION['user'])&&isset($_SESSION['style'])&&$_SESSION['style']===2) {
+
+		 	//获取最新用户信息,下面会判断余额用
+			 $sql = "select * from users where username= ? and isable = 1 limit 1";
+			 $datasql = array($_SESSION['username']);
+			 $user = $this->db->query($sql,$datasql)->row_array();
+			 //插入语句写入数据库
+	    	$this->logs->append($this->db->last_query());
+	        $this->logs->save(4);
+
+	        
+		 	//查询此类商品是否存在
+		 	$apigood=$this->db->query("select * from shua_api where aid='$aid' limit 1")->row_array();
+		 	//插入语句写入数据库
+    		$this->logs->append($this->db->last_query());
+        	$this->logs->save(4);
+
+		 	if($apigood && $apigood['active']==1){
+		 		
+	 			$uid = $user['id'];
+	 			$uname = $user['username'];
+	 			$date = date("Y-m-d H:i:s");
+	 			$need=$apigood['price']*$buynum;
+	 			$api_trade_no=date("YmdHis").rand(111,999);
+	 			$aname = $apigood['name'];
+	 			//插入订单
+	 			$sql="insert into `apiorder` (`api_trade_no`,`aid`,`aname`,`uname`,`money`,`uid`,`qqs`,`addtime`,`status`,`count`,`info`) values ('".$api_trade_no."','".$aid."','".$aname."','".$uname."','".$need."','".$uid."','".$apiqqs."','".$date."','0',".$buynum.",'".$apibeizhu."')";
+	 			$this->db->query($sql);
+
+	 			//账户余额是否够本次支付
+	 			if ($user['account'] < $need) {
+	 				//插入语句写入数据库,这是上面那条sql,在这是因为怕影响下面的affect
+    				$this->logs->append($this->db->last_query());
+        			$this->logs->save(1);
+	 				exit('{"code":-1,"msg":"账户余额不足！"}');
+	 			} else {
+	 				if ($this->db->affected_rows()) {
+
+	 					//插入语句写入数据库,这是上面那条sql,在这是因为怕影响下面的affect
+    					$this->logs->append($this->db->last_query());
+        				$this->logs->save(1);
+
+	 					//若订单生成成功,则减少用户的平台余额
+	 					$jaccoutsql = "update users set account=account-{$need} where id='{$uid}'";
+	 					$this->db->query($jaccoutsql);
+
+	 					//若用户扣款成功进入
+	 					if ($this->db->affected_rows()) {
+	 						//插入语句写入数据库,这是上面那条sql,在这是因为怕影响上面的affect
+    						$this->logs->append($this->db->last_query());
+        					$this->logs->save(3);
+
+	 						//拿到正在使用API账号
+	 						$apiusersql = "select * from apiuser where isactive=1 limit 1";
+	 						$apiuser = $this->db->query($apiusersql)->row_array();
+
+	 						//插入语句写入数据库,这是上面那条sql,在这是因为怕影响下面的affect
+    						$this->logs->append($this->db->last_query());
+        					$this->logs->save(4);
+
+
+	 						// 1. 初始化
+ 							$moneych = curl_init();
+ 							// 2. 设置选项，包括URL
+ 							curl_setopt($moneych,CURLOPT_URL,"http://api.qqhao456.com/api.php?u=".$apiuser['username']."&s=".$apiuser['password']."&style="."3"."&level=".$apigood['level']."&data=".$apiqqs);
+ 							curl_setopt($moneych,CURLOPT_RETURNTRANSFER,1);
+ 							curl_setopt($moneych,CURLOPT_HEADER,0);
+ 							// 3. 执行并获取HTML文档内容
+ 							$moneyoutput = curl_exec($moneych);
+ 							if($moneyoutput === FALSE ){
+ 								echo "CURL Error:".curl_error($moneych);
+ 							}
+ 							//替换返回字串中的{},便于json_decode
+ 							$moneyoutput=str_replace("{","[",$moneyoutput);
+ 							$moneyoutput=str_replace("}","]",$moneyoutput);
+
+
+ 							//返回消息解析
+ 							$apiorderarray=json_decode($moneyoutput);
+
+ 							//更新订单中在第三方平台上的订单信息
+	 						$sql="update apiorder set api_order='{$apiorderarray[0]}',api_qq_num={$apiorderarray[1]},api_qq_money={$apiorderarray[2]},status=1 where api_trade_no='{$api_trade_no}'";
+	 						$this->db->query($sql);
+	 						//插入语句写入数据库,这是上面那条sql,在这是因为怕影响下面的affect
+    						$this->logs->append($this->db->last_query());
+        					$this->logs->save(3);
+
+ 							// 4. 释放curl句柄
+ 							curl_close($moneych);
+
+ 							exit('{"code":0,"msg":"下单成功！","api_trade_no":"'.$api_trade_no.'"}');
+
+	 					}
+	 				} else {
+	 					//插入语句写入数据库,这是上面那条sql,在这是因为怕影响下面的affect
+    					$this->logs->append($this->db->last_query());
+        				$this->logs->save(1);
+	 					//若是影响行数为0,则订单生成失败,
+	 					exit('{"code":-1,"msg":"提交订单失败！"}');
+	 				}
+	 			}
+		 	}else{
+		 		exit('{"code":-2,"msg":"该商品不存在"}');
+		 	}
+		 } else {
+		 	exit('{"code":-3,"msg":"请登录后购买"}');
+		 }
+	}
+
+}
+*/
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Ajax extends CI_Controller {
+
+	
+	public function pay()
+	{
+		//获取用户购买的东西
+		$tid=intval($_POST['tid']);
+		$buynum=intval($_POST['buynum']);
+		$beizhu="去掉备注";
+
+		if (isset($_SESSION['user'])&&isset($_SESSION['style'])&&$_SESSION['style']===2) {
+			//获取最新用户信息,下面会判断余额用
+			$sql = "select * from users where username= ? and isable = 1 limit 1";
+			$datasql = array($_SESSION['username']);
+			$user = $this->db->query($sql,$datasql)->row_array();
+			$this->logs->append($this->db->last_query());//日志
+		 	//查询此类商品是否存在
+		 	$tool=$this->db->query("select * from shua_tools where tid='$tid' limit 1")->row_array();
+		 	$this->logs->append($this->db->last_query());//日志
+		 	if($tool && $tool['active']==1){
+		 		//检查商品库存是否足够
+				if($tool['stock']<$buynum){
+					$this->logs->save(7);
+		 			exit('{"code":-1,"msg":"库存不足,请联系客服！"}');				
+				}
+		 		else
+		 		{
+		 			$uid = $_SESSION['user']['id'];
+		 			$uname = $_SESSION['user']['username'];
+		 			$date = date("Y-m-d H:i:s");
+		 			$need=$tool['price']*$buynum;
+		 			$trade_no=date("YmdHis").rand(111,999);
+		 			if ($user['account'] < $need) {
+		 				//提示用户余额不足
+		 				$this->logs->save(7);
+		 				exit('{"code":-1,"msg":"您的余额不足！"}');
+		 			} else {
+		 				//插入订单
+		 				$sql="insert into `shua_pay` (`trade_no`,`tid`,`name`,`money`,`uid`,`uname`,`addtime`,`status`,`count`,`info`) values ('".$trade_no."','".$tid."','".$tool['name']."','".$need."','".$uid."','".$uname."','".$date."','0',".$buynum.",'".$beizhu."')";
+		 				$this->db->query($sql);
+		 				$this->logs->append($this->db->last_query());//日志
+		 				if ($this->db->affected_rows()) {
+		 					//若订单生成成功,则减少用户的平台余额
+		 					$jaccoutsql = "update users set account=account-{$need} where id='{$uid}'";
+		 					$this->db->query($jaccoutsql);
+		 					$this->logs->append($this->db->last_query());//日志
+		 					if ($this->db->affected_rows()) {
+		 						//若是扣款成功,则进行下一步,查号
+		 						$chsql = "select * from goods where tid={$tid} and is_sell=0 limit {$buynum}";
+		 						$qqarray = $this->db->query($chsql)->result_array();
+		 						$this->logs->append($this->db->last_query());//日志
+		 						if (count($qqarray)==$buynum) {
+		 							//查询账号成功
+		 							foreach ($qqarray as $key => $qq) {
+		 								//改变qq状态设置为已售
+		 								$is_sellsql = "update goods set is_sell=1 where gid='{$qq['gid']}'";
+		 								$this->db->query($is_sellsql);
+		 								$this->logs->append($this->db->last_query());//日志
+		 								//账号加入订单账号表
+		 								$insert_trade_qq="insert into `trade_qq` (`trade_no`,`qqnum`) values('{$trade_no}','{$qq['qqnum']}')";
+		 								$this->db->query($insert_trade_qq);
+		 								$this->logs->append($this->db->last_query());//日志
+		 								//该账号类型库存减1
+		 								$stocksql = "update shua_tools set stock=stock-1 where tid='{$tid}'";
+		 								$this->db->query($stocksql);
+		 								$this->logs->append($this->db->last_query());//日志
+		 							}
+		 							//付款后就显示已完成,这个就不判断了
+		 							$upstatus = "update shua_pay set status=1 where trade_no='{$trade_no}'";
+		 							$this->db->query($upstatus);
+		 							$this->logs->append($this->db->last_query());//日志
+		 							$this->logs->save(6);
+		 							exit('{"code":0,"msg":"下单成功！","trade_no":"'.$trade_no.'"}');
+		 						} else {
+		 							$this->logs->save(7);
+		 							exit('{"code":-1,"msg":"查询出所需数量账号失败！"}');
+		 						}
+		 					} else {
+		 						//若是影响行数为0,则用户月减少失败
+		 						$this->logs->save(7);
+		 						exit('{"code":-1,"msg":"用户余额扣款失败！"}');
+		 					}
+		 				} else {
+		 					//若是影响行数为0,则订单生成失败,
+		 					$this->logs->save(7);
+		 					exit('{"code":-1,"msg":"提交订单失败！"}');
+		 				}
+		 			}
+		 		}
+		 	}else{
+		 		$this->logs->save(7);
+		 		exit('{"code":-2,"msg":"该商品不存在"}');
+		 	}
+		 } else {
+		 	$this->logs->save(7);
+		 	exit('{"code":-3,"msg":"请登录后购买"}');
+		 }
+	}
+
+
+	public function apipay()
+	{
+		 //获取用户购买的东西
+		 $aid=intval($_POST['aid']);
+		 $apiqqs=daddslashes($_POST['apiqqs']);
+		 $apibeizhu="去掉备注";
+		 //qq号分组,计算解封数量
+		 $qqarray = explode(",",$apiqqs);
+		 $buynum = count($qqarray);
+
+		 //检测是否登录
+		if (isset($_SESSION['user'])&&isset($_SESSION['style'])&&$_SESSION['style']===2) {
+		 	//获取最新用户信息,下面会判断余额用
+			 $sql = "select * from users where username= ? and isable = 1 limit 1";
+			 $datasql = array($_SESSION['username']);
+			 $user = $this->db->query($sql,$datasql)->row_array();
+			 $this->logs->append($this->db->last_query());//日志	      
+		 	//查询此类商品是否存在
+		 	$apigood=$this->db->query("select * from shua_api where aid='$aid' limit 1")->row_array();
+		 	$this->logs->append($this->db->last_query());//日志
+		 	if($apigood && $apigood['active']==1){ 		
+	 			$uid = $user['id'];
+	 			$uname = $user['username'];
+	 			$date = date("Y-m-d H:i:s");
+	 			$need=$apigood['price']*$buynum;
+	 			$api_trade_no=date("YmdHis").rand(111,999);
+	 			$aname = $apigood['name'];
+	 			
+	 			//账户余额是否够本次支付
+	 			if ($user['account'] < $need) {
+	 				$this->logs->save(7);
+	 				exit('{"code":-1,"msg":"账户余额不足！"}');
+	 			} else {
+	 				//插入订单
+	 				$sql="insert into `apiorder` (`api_trade_no`,`aid`,`aname`,`uname`,`money`,`uid`,`qqs`,`addtime`,`status`,`count`,`info`) values ('".$api_trade_no."','".$aid."','".$aname."','".$uname."','".$need."','".$uid."','".$apiqqs."','".$date."','0',".$buynum.",'".$apibeizhu."')";
+	 				$this->db->query($sql);
+	 				$this->logs->append($this->db->last_query());//日志
+
+	 				if ($this->db->affected_rows()) {
+	 					//若订单生成成功,则减少用户的平台余额
+	 					$jaccoutsql = "update users set account=account-{$need} where id='{$uid}'";
+	 					$this->db->query($jaccoutsql);
+	 					$this->logs->append($this->db->last_query());//日志
+	 					//若用户扣款成功进入
+	 					if ($this->db->affected_rows()) {
+
+	 						//拿到正在使用API账号
+	 						$apiusersql = "select * from apiuser where isactive=1 limit 1";
+	 						$apiuser = $this->db->query($apiusersql)->row_array();
+	 						$this->logs->append($this->db->last_query());//日志
+	 						// 1. 初始化
+ 							$moneych = curl_init();
+ 							// 2. 设置选项，包括URL
+ 							curl_setopt($moneych,CURLOPT_URL,"http://api.qqhao456.com/api.php?u=".$apiuser['username']."&s=".$apiuser['password']."&style="."3"."&level=".$apigood['level']."&data=".$apiqqs);
+ 							curl_setopt($moneych,CURLOPT_RETURNTRANSFER,1);
+ 							curl_setopt($moneych,CURLOPT_HEADER,0);
+ 							// 3. 执行并获取HTML文档内容
+ 							$moneyoutput = curl_exec($moneych);
+ 							if($moneyoutput === FALSE ){
+ 								echo "CURL Error:".curl_error($moneych);
+ 							}
+ 							//替换返回字串中的{},便于json_decode
+ 							$moneyoutput=str_replace("{","[",$moneyoutput);
+ 							$moneyoutput=str_replace("}","]",$moneyoutput);
+
+
+ 							//返回消息解析
+ 							$apiorderarray=json_decode($moneyoutput);
+
+ 							//更新订单中在第三方平台上的订单信息
+	 						$sql="update apiorder set api_order='{$apiorderarray[0]}',api_qq_num={$apiorderarray[1]},api_qq_money={$apiorderarray[2]},status=1 where api_trade_no='{$api_trade_no}'";
+	 						$this->db->query($sql);
+	 						$this->logs->append($this->db->last_query());//日志
+ 							// 4. 释放curl句柄
+ 							curl_close($moneych);
+ 							$this->logs->save(6);
+ 							exit('{"code":0,"msg":"下单成功！","api_trade_no":"'.$api_trade_no.'"}');
+	 					}else{
+	 						$this->logs->save(7);
+	 						exit('{"code":-1,"msg":"付款失败！"}');
+	 					}
+	 				} else {
+	 					$this->logs->save(7);
+	 					//若是影响行数为0,则订单生成失败,
+	 					exit('{"code":-1,"msg":"提交订单失败！"}');
+	 				}
+	 			}
+		 	}else{
+		 		$this->logs->save(7);
+		 		exit('{"code":-2,"msg":"该商品不存在"}');
+		 	}
+		} else {
+			exit('{"code":-3,"msg":"请登录后购买"}');
+		}
+	}
+
+}
+

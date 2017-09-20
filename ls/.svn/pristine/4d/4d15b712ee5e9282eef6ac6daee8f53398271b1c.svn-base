@@ -1,0 +1,67 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Edituser extends CI_Controller {
+
+	public $islogin = 0;
+
+	public function __construct(){
+		parent::__construct();
+
+        if(isset($_SESSION['user'])&&isset($_SESSION['style'])&&$_SESSION['style']===2)
+		{
+			$this->islogin=1;		
+		}else{
+			$this->islogin=0;
+		}
+
+	}
+
+	public function index()
+	{
+		$user = $_SESSION['user'];
+		$data['title'] = '个人基本信息设置';
+		$data['islogin'] = $this->islogin;
+    	$data['c'] = 'pdata';
+		$data['user'] = $user;
+		$this->load->view('front/edituser@index',$data);
+	}
+
+	public function set(){
+		
+		$user = $_SESSION['user'];
+		$id=$user['id'];
+		$username=$user['username'];
+
+		$nick=$_POST['nick'];
+		$age=$_POST['age'];
+		$phone=$_POST['phone'];
+		$mail=$_POST['mail'];
+		$qq=$_POST['qq'];
+
+
+		$usersql = "update users set nick='{$nick}',age={$age},phone='{$phone}',mail='{$mail}',qq='{$qq}' where id={$id} and username='{$username}'";
+
+		$this->db->query($usersql);
+		if ($this->db->affected_rows()) {
+
+			$sql = "select * from users where username= ? and isable = 1 limit 1";
+			$datasql = array($username);
+			$user = $this->db->query($sql,$datasql)->row_array();
+
+
+			$_SESSION['user'] = $user;
+			$content=remsg('修改成功！',1);
+		}else{
+			$content=remsg('修改失败！<br/>'.$this->db->_error_message(),4);
+		}
+
+			
+
+		$data['title']='个人信息设置';
+		$data['content'] = $content;
+		$data['islogin'] = $this->islogin;
+		$data['c'] = 'pdata';
+		$this->load->view('front/info',$data);
+	}
+}

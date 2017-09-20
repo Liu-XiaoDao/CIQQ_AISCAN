@@ -1,0 +1,119 @@
+
+<?php include VIEWPATH.'admin/__header.php';?>
+<?php
+if($islogin==1){}else exit("<script language='javascript'>window.location.href='/index.php/admin/login';</script>");
+
+?>
+
+  <div class="container" style="padding-top:70px;">
+    <div class="col-sm-12 col-md-10 center-block" style="float: none;">
+<div class="modal fade" align="left" id="search" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">搜索订单</h4>
+      </div>
+      <div class="modal-body">
+      <form action="/index.php/admin/order/query" method="GET">
+<input type="text" class="form-control" name="username" placeholder="请输入要搜索的用户名"><br/>
+<input type="submit" class="btn btn-primary btn-block" value="搜索"></form>
+</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<?php
+
+function display_zt($zt){
+	if($zt==0)
+		  return '<font color=green>未付款</font>';
+	 else
+		  return '<font color=blue>已完成</font>';
+  }
+
+?>
+
+<form action="download.php" method="GET" class="form-inline">
+  <!-- <div class="form-group">
+    <label>导出列表</label>
+    <select name="tid" class="form-control"><?php //echo $select;?></select>
+  </div>
+  <div class="form-group">
+    <select class="form-control" name="sign"><option value="0">是否标记为已完成</option><option value="0">0_否</option><option value="1">1_是</option></select>
+  </div>
+  <button type="submit" class="btn btn-primary">下载</button> -->
+  <a href="#" data-toggle="modal" data-target="#search" id="search" class="btn btn-success">搜索</a>
+</form>
+
+<?php
+echo $con;
+?>
+
+
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead><tr><th>订单编号</th><th>金额</th><th>类型</th><th>数量</th><th>时间</th><th>状态</th><th>用户</th><!-- <th>备注</th> --></tr></thead>
+          <tbody>
+
+
+<?php
+    foreach ($orders as $key => $res) {
+?>
+
+  <tr>
+    <td><a href="/index.php/admin/order/detail/<?php echo $res['trade_no'];?>"><?php echo $res['trade_no']; ?></a></td>
+    <td><?php echo $res['money']; ?></td>
+    <td><?php echo $res['name']; ?></td>
+    <td><?php echo $res['count']; ?></td>
+    <td><?php echo $res['addtime']; ?></td>
+    <td><?php echo display_zt($res['status']); ?></td>
+    <td><?php echo $res['uname']; ?></td>
+    <!-- <td><?php //echo $res['info']; ?></td> -->
+
+
+
+
+  </tr>
+
+
+<?php   }  ?>
+
+
+
+          </tbody>
+        </table>
+      </div>
+
+
+<?php echo $pager; ?>
+
+
+    </div>
+  </div>
+
+
+
+<script>
+function setStatus(id, status) {
+	$.ajax({
+		type : 'get',
+		url : '/index.php/admin/order/status',
+		data : 'id=' + id + '&status=' + status,
+		dataType : 'json',
+		success : function(ret) {
+			if (ret['code'] != 200) {
+				return alert(ret['msg'] ? ret['msg'] : '操作失败');
+			}
+			window.location.reload();
+		}
+	});
+}
+</script>
+
+
+

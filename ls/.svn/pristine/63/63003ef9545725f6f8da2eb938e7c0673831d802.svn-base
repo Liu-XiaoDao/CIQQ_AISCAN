@@ -1,0 +1,49 @@
+<?php include VIEWPATH.'admin/__header.php';?>
+<?php
+if($islogin==1){}else exit("<script language='javascript'>window.location.href='/admin/login';</script>");
+function display_zt($zt){
+	if($zt==0)
+		return '<font color=green>已完成</font>';
+	else
+		return '<font color=blue>待处理</font>';
+}
+?>
+
+ <div class="container" style="padding-top:70px;">
+    <div class="col-xs-12 col-sm-10 col-lg-8 center-block" style="float: none;">
+      	<div class="panel panel-primary">
+        	<div class="panel-heading"><h3 class="panel-title">订单详情-所属用户:<?php echo $order['uname'];?></h3></div>
+          	<ul class="list-group">
+				<li class="list-group-item">订单号：<?php echo $order['trade_no'];?></li>
+				<li class="list-group-item">用户：<?php echo $order['uname'];?></li>
+				<li class="list-group-item">下单时间：<?php echo $order['addtime'];?></li>
+				<li class="list-group-item">商品类别：<?php echo $order['name'];?></li>
+            	<li class="list-group-item">商品数量：<?php echo $order['count'];?></li>
+            	<li class="list-group-item">订单金额：<?php echo $order['money'];?>元</li>
+				<li class="list-group-item">订单状态：<?php echo display_zt($order['status']);?></li>
+				<li class="list-group-item">订单备注：<?php echo $order['info'];?></li>
+				<li class="list-group-item"><?php echo $api_order_info;?></li>
+          	</ul>
+      	</div>
+		<div class="panel panel-info">
+			<div class="panel-heading">
+				<h3 class="panel-title">订单所属QQ</h3>
+			</div>
+			<ul class="list-group">
+				<?php
+					foreach ($qqs_status_array as $key => $qq) {
+				?>
+						<li class="list-group-item">
+							<?php echo $qq;?>
+						</li>
+				<?php	
+					}
+				?>
+				
+		
+			</ul>
+		</div>
+		<a href="/admin/order">>>返回类别列表</a>
+    </div>
+ </div>
+ <?php include VIEWPATH.'admin/__footer.php';?>

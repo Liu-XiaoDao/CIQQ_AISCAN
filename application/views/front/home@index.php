@@ -1,0 +1,45 @@
+<?php include VIEWPATH.'front/__header.php';?>
+<?php
+if($islogin==1){}else exit("<script language='javascript'>window.location.href='/index.php/front/login';</script>");
+?>
+
+  <div class="container" style="padding-top:70px;">
+    <div class="col-xs-12 col-sm-10 col-lg-8 center-block" style="float: none;">
+      <div class="panel panel-primary">
+        <div class="panel-heading"><h3 class="panel-title">个人资料</h3></div>
+          <ul class="list-group">
+			<li class="list-group-item">用户名：<?php echo $user['username']?></li>
+			<li class="list-group-item">昵称：<?php echo $user['nick']?></li>
+			<li class="list-group-item">电话：<?php echo $user['phone']?></li>
+            <li class="list-group-item">邮箱：<?php echo $user['mail']?></li>
+            <li class="list-group-item">平台余额：<?php echo $user['account']?>元</li>
+			<li class="list-group-item">快速导航： 
+				<a href="/index.php/front/acount" class="btn btn-xs btn-primary">充值</a>&nbsp;
+				<a href="/index.php/front/order" class="btn btn-xs btn-success">订单管理</a>&nbsp;
+				<!-- <a href="./kmlist.php" class="btn btn-xs btn-warning">卡密管理</a> -->
+			</li>
+          </ul>
+      </div>
+<div class="panel panel-info">
+	<div class="panel-heading">
+		<h3 class="panel-title">订单信息</h3>
+	</div>
+	<ul class="list-group">
+		<li class="list-group-item">
+		<?php
+			if ($orderinfo) {
+		?>
+		<b>最新订单：</b>订单编号：<a href="/index.php/front/order/detail/<?php echo $order['trade_no'];?>"><?php echo $order['trade_no'];?></a>---下单时间：<?php echo $order['addtime'];?>---备注：<?php echo $order['info'];?>
+
+		<?php }else{?>
+			<b>你还没有订单！！！</b>
+		<?php
+			}
+		?>
+			
+		</li>
+		
+	</ul>
+</div>
+    </div>
+  </div>

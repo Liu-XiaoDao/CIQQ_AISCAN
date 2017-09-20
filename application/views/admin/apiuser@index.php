@@ -1,0 +1,85 @@
+
+<?php include VIEWPATH.'admin/__header.php';?>
+<?php
+if($islogin==1){}else exit("<script language='javascript'>window.location.href='/index.php/admin/login';</script>");
+
+?>
+
+  <div class="container" style="padding-top:70px;">
+    <div class="col-sm-12 col-md-10 center-block" style="float: none;">
+
+      <div class="alert alert-info">
+      系统共有 <b><?php echo $numrows; ?></b> 个api账号<br/><a href="/index.php/admin/apiuser/add" class="btn btn-primary">添加api账号</a>
+    </div>
+
+
+
+
+
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead><tr><th>ID</th><th>账号</th><th>密码</th><th>是否可用</th>操作</th></tr></thead>
+          <tbody>
+
+
+<?php
+    foreach ($apiusers as $key => $apiuser) {
+?>
+
+  <tr>
+    <td><?php echo $apiuser['id']; ?></td>
+    <td><?php echo $apiuser['username']; ?></td>
+    <td><?php echo $apiuser['password']; ?></td>
+    <td><select onChange="javascript:setStatus(<?php echo $apiuser['id'];?>,this.value)" class="form-control" default="<?php echo $apiuser['isactive']?>"><option selected>操作api账号</option><option value="0">禁用</option><option value="1">使用</option></select></td>
+    <td><a href="/index.php/admin/apiuser/edit/<?php echo $apiuser['id'];?>" class="btn btn-info btn-xs">编辑</a>&nbsp;<a href="/index.php/admin/apiuser/del/<?php echo $apiuser['id'];?>" class="btn btn-xs btn-danger" onclick="return confirm(\'你确实要删除此商品吗？\');">删除</a></td>
+
+
+
+
+
+  </tr>
+
+
+<?php   }  ?>
+
+
+
+          </tbody>
+        </table>
+      </div>
+
+
+<?php echo $pager; ?>
+
+
+    </div>
+  </div>
+
+
+
+<script>
+    function setStatus(id, status) {
+	     $.ajax({
+		   type : 'get',
+		   url : '/index.php/admin/apiuser/status',
+		   data : 'id=' + id + '&status=' + status,
+		   dataType : 'json',
+		   success : function(ret) {
+			     if (ret['code'] != 200) {
+				      return alert(ret['msg'] ? ret['msg'] : '操作失败');
+			     }
+			     window.location.reload();
+		    }
+	     });
+    }
+
+
+    var items = $("select[default]");
+    for (i = 0; i < items.length; i++) {
+        $(items[i]).val($(items[i]).attr("default"));
+    }
+
+</script>
+
+
+

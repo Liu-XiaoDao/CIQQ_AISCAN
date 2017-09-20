@@ -1,0 +1,59 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Welcome extends CI_Controller {
+
+	/**
+	 * Index Page for this controller.
+	 *
+	 * Maps to the following URL
+	 * 		http://example.com/index.php/welcome
+	 *	- or -
+	 * 		http://example.com/index.php/welcome/index
+	 *	- or -
+	 * Since this controller is set as the default controller in
+	 * config/routes.php, it's displayed at http://example.com/
+	 *
+	 * So any other public methods not prefixed with an underscore will
+	 * map to /index.php/welcome/<method_name>
+	 * @see https://codeigniter.com/user_guide/general/urls.html
+	 */
+	public function index()
+	{
+
+
+		// include("./includes/common.php");
+		$qq=isset($_GET['qq'])?strip_tags($_GET['qq']):null;
+		$data['qq'] = $qq;
+
+		$rss=$this->db->query("SELECT * FROM shua_tools WHERE 1 order by sort asc")->result_array();
+		$select='';
+		foreach ($rss as $key => $value) {
+			$shua_func[$value['tid']]=$value['name'];
+			$select.='<option value="'.$value['tid'].'" price="'.$value['price'].'">'.$value['name'].'---当前库存:'.$value['num'].'</option>';
+		}
+		// while($res = $DB->fetch($rs)){
+		// 	$shua_func[$res['tid']]=$res['name'];
+		// 	$select.='<option value="'.$res['tid'].'" price="'.$res['price'].'">'.$res['name'].'---当前库存:'.$res['num'].'</option>';
+		// }
+		$data['select'] = $select;
+
+
+		$count1=$this->db->query("SELECT count(*) as count1 from shua_orders")->row()->count1;
+
+		$count2=$this->db->query("SELECT count(*) as count2 from shua_orders where status=1")->row()->count2;
+
+		$mysqlversion=$this->db->query("select VERSION() as version")->row()->version;
+
+		$data['count1'] = $count1;
+		$data['count2'] = $count2;
+		$data['mysqlversion'] = $mysqlversion;
+
+
+
+		$conf = $this->cacheqq->pre_fetch();
+		$data['conf'] = $conf;
+
+		$this->load->view('welcome',$data);
+	}
+}

@@ -1,0 +1,95 @@
+<?php include VIEWPATH.'admin/__header.php';?>
+<?php
+if($islogin==1){}else exit("<script language='javascript'>window.location.href='/admin/login';</script>");
+?>
+  <div class="container" style="padding-top:70px;">
+    <div class="col-xs-12 col-sm-10 col-lg-8 center-block" style="float: none;">
+      <div class="panel panel-primary">
+        <div class="panel-heading"><h3 class="panel-title">API基本信息</h3></div>
+          <ul class="list-group">
+			<li class="list-group-item"><span class="glyphicon glyphicon-tint"></span> <b>平台余额:</b><span id="money">正在查询请稍等...</span></li>
+            <li class="list-group-item"><span class="glyphicon glyphicon-time"></span> <b>当前各级价格:</b><span id="price">正在查询请稍等...</span></li>
+            <li class="list-group-item"><span class="glyphicon glyphicon-time"></span> <b>当前等待数量:</b><span id="wait">正在查询请稍等...</span></li>
+
+          </ul>
+      </div>
+<div class="panel panel-info">
+	<div class="panel-heading">
+		<h3 class="panel-title">服务器信息</h3>
+	</div>
+	<ul class="list-group">
+		<li class="list-group-item">
+			<b>PHP 版本：</b>
+			
+		</li>
+		<li class="list-group-item">
+			<b>MySQL 版本：</b>
+		</li>
+		<li class="list-group-item">
+			<b>服务器软件：</b>
+		</li>
+		
+		<li class="list-group-item">
+			<b>程序最大运行时间：</b>s
+		</li>
+		<li class="list-group-item">
+			<b>POST许可：</b>
+		</li>
+		<li class="list-group-item">
+			<b>文件上传许可：</b>
+		</li>
+	</ul>
+</div>
+    </div>
+  </div>
+
+
+  <script type="text/javascript">
+
+
+		function wait(){
+			$.ajax({
+				url:"/admin/deblock/wait",
+				async:true,
+				type:'GET',
+				success:function(result){
+					$('#wait').html(result);
+				}
+			});
+		}
+
+		function money(){
+			$.ajax({
+				url:"/admin/deblock/money",
+				async:true,
+				type:'GET',
+				success:function(result){
+					$('#money').html(result);
+				}
+			});
+		}
+
+		function price(){
+			$.ajax({
+				url:"/admin/deblock/price",
+				async:true,
+				type:'GET',
+				success:function(result){
+					$('#price').html(result);
+				}
+			});
+		}
+
+		setTimeout(function(){
+			wait();
+		}, 10000);
+
+		setTimeout(function(){
+			money();
+		}, 1000);
+
+		setTimeout(function(){
+			price();
+		}, 5000);
+
+  </script>

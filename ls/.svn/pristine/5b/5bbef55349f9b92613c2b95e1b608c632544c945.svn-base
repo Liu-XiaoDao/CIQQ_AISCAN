@@ -1,0 +1,262 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Deblock extends CI_Controller{
+
+	public $islogin = 0;
+
+	public function __construct(){
+		parent::__construct();
+
+        if(isset($_SESSION['admin_token']))
+		{
+			$this->islogin=1;		
+		}else{
+			$this->islogin=0;
+		}
+
+	}
+
+
+	public function index($page = 1)
+	{
+        $data['title']='API信息';
+		$data['islogin'] = $this->islogin;
+		$data['c'] = 'api';
+		$this->load->view('admin/deblock@index',$data);
+	}
+
+	public function test()
+	{
+		echo "string";
+	}
+
+
+	public function price()
+	{
+		// 1. 初始化
+ 		$ch = curl_init();
+ 		// 2. 设置选项，包括URL
+ 		curl_setopt($ch,CURLOPT_URL,"http://api.qqhao456.com/api.php?u=18106322292&s=ad7a4274cff7405e547ec4b2e1e5db43&price");
+ 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+ 		curl_setopt($ch,CURLOPT_HEADER,0);
+ 		// 3. 执行并获取HTML文档内容
+ 		$output = curl_exec($ch);
+ 		if($output === FALSE ){
+ 			echo "CURL Error:".curl_error($ch);
+ 		}
+ 		
+ 		$output=str_replace("{","[",$output);
+ 		$output=str_replace("}","]",$output);
+
+ 		$pricearray=json_decode($output);
+ 		$pricestr = "";
+ 		for ($i=0; $i < 8; $i++) { 
+ 			if ($i=4) {
+ 				$pricestr .= "解封普通:".$pricearray[4];
+ 			}
+ 			if ($i=5) {
+ 				$pricestr .= " 解封优先:".$pricearray[5];
+ 			}
+ 			if ($i=6) {
+ 				$pricestr .= " 解封特急:".$pricearray[6];
+ 			}
+ 			if ($i=7) {
+ 				$pricestr .= " 解封土豪:".$pricearray[7];
+ 			}
+ 		}
+
+ 		echo $pricestr;
+ 		
+ 		// 4. 释放curl句柄
+ 		curl_close($ch);
+	}
+
+
+	public function wait()
+	{
+ 		// 1. 初始化
+ 		$waitch = curl_init();
+ 		// 2. 设置选项，包括URL
+ 		curl_setopt($waitch,CURLOPT_URL,"http://api.qqhao456.com/api.php?u=18106322292&s=ad7a4274cff7405e547ec4b2e1e5db43&wait");
+ 		curl_setopt($waitch,CURLOPT_RETURNTRANSFER,1);
+ 		curl_setopt($waitch,CURLOPT_HEADER,0);
+ 		// 3. 执行并获取HTML文档内容
+ 		$waitoutput = curl_exec($waitch);
+ 		if($waitoutput === FALSE ){
+ 			echo "CURL Error:".curl_error($waitch);
+ 		}
+
+ 		$waitoutput=str_replace("{","[",$waitoutput);
+ 		$waitoutput=str_replace("}","]",$waitoutput);
+
+ 		$waitarray=json_decode($waitoutput);
+ 		$waitstr = "";
+ 		for ($i=0; $i < 8; $i++) { 
+ 			if ($i=4) {
+ 				$waitstr .= "解封普通:".$waitarray[4];
+ 			}
+ 			if ($i=5) {
+ 				$waitstr .= " 解封优先:".$waitarray[5];
+ 			}
+ 			if ($i=6) {
+ 				$waitstr .= " 解封特急:".$waitarray[6];
+ 			}
+ 			if ($i=7) {
+ 				$waitstr .= " 解封土豪:".$waitarray[7];
+ 			}
+ 		}
+
+ 		echo $waitstr;
+
+ 		// 4. 释放curl句柄
+ 		curl_close($waitch);
+ 		exit();
+	}
+
+
+	public function money()
+	{
+ 		// 1. 初始化
+ 		$moneych = curl_init();
+ 		// 2. 设置选项，包括URL
+ 		curl_setopt($moneych,CURLOPT_URL,"http://api.qqhao456.com/api.php?u=18106322292&s=ad7a4274cff7405e547ec4b2e1e5db43&money");
+ 		curl_setopt($moneych,CURLOPT_RETURNTRANSFER,1);
+ 		curl_setopt($moneych,CURLOPT_HEADER,0);
+ 		// 3. 执行并获取HTML文档内容
+ 		$moneyoutput = curl_exec($moneych);
+ 		if($moneyoutput === FALSE ){
+ 			echo "CURL Error:".curl_error($moneych);
+ 		}
+
+ 		$moneyoutput=str_replace("{"," ",$moneyoutput);
+ 		$moneyoutput=str_replace("}","元",$moneyoutput);
+
+ 		echo $moneyoutput;
+ 		// 4. 释放curl句柄
+ 		curl_close($moneych);
+
+	}
+
+	
+
+
+
+
+
+	// public function add()
+	// {
+	// 	if (IS_POST) {
+	// 		$addtime=date("Y-m-d h:i:s");
+ //    		$qqnum=$_POST['qqnum'];
+ //    		$qqpw=$_POST['qqpw'];
+ //    		$leibie=$_POST['leibie'];
+ //    		$is_sell=$_POST['is_sell'];
+ //    		$phone=$_POST['phone'];
+ //    		$code=$_POST['code'];
+
+
+ //    		if($qqnum==NULL or $qqpw==NULL or $leibie==NULL or $is_sell==NULL or $phone==NULL or $code==NULL){
+ //        			$content=remsg('保存错误,请确保每项都不为空!',3);
+ //    		} else {
+ //        			$sql="insert into `goods` (`tid`,`qqnum`,`qqpw`,`is_sell`,`addtime`,`phone`,`code`) values ('".$leibie."','".$qqnum."','".$qqpw."','".$is_sell."','".$addtime."','".$phone."','".$code."')";
+ //        			$this->db->query($sql);
+
+	// 				//该账号类型库存加1
+	// 	 			$stocksql = "update shua_tools set num=num+1,stock=stock+1 where tid='{$leibie}'";
+	// 	 			$this->db->query($stocksql);
+
+
+ //    				if($this->db->affected_rows()){
+        
+	//      				$content=remsg('添加类别成功！<br/><br/><a href="/admin/gres">>>返回类别列表</a>',1);
+ //    				}else
+	//      				$content=remsg('添加类别失败！'.$this->db->_error_message(),4);
+ //    		}
+
+ //    		$data['title']='商品仓库';
+	// 		$data['content'] = $content;
+	// 		$data['islogin'] = $this->islogin;
+	// 		$data['c'] = 'clist';
+	// 		$this->load->view('admin/gres@addsuc',$data);
+
+	// 	}else{
+	// 		$tools=$this->db->query("SELECT * FROM shua_tools order by tid asc")->result_array();
+
+	// 		$data['tools']=$tools;
+
+	// 		$data['title']='商品仓库';
+	// 		$data['islogin'] = $this->islogin;
+	// 		$data['c'] = 'clist';
+	// 		$this->load->view('admin/gres@add',$data);
+	// 	}
+		
+	// }
+
+	// public function edit($gid)
+	// {
+	// 	if (IS_POST) {
+
+ //    		$row=$this->db->query("select * from goods where gid='$gid' limit 1")->row();
+ //    		if(!$row)
+	//      		$content=remsg('当前QQ不存在！',3);
+
+ //    		$qqnum=$_POST['qqnum'];
+ //   		 	$qqpw=$_POST['qqpw'];
+ //   		 	$leibie=$_POST['leibie'];
+ //    		$is_sell=$_POST['is_sell'];
+ //    		$phone=$_POST['phone'];
+ //    		$code=$_POST['code'];
+
+ //       		if($qqnum==NULL or $qqpw==NULL or $leibie==NULL or $is_sell==NULL or $phone==NULL or $code==NULL){
+ //            	$content=remsg('保存错误,请确保每项都不为空!',3);
+ //        	} else {
+ //            	if($this->db->query("update goods set tid='$leibie',qqnum='$qqnum',qqpw='$qqpw',is_sell='$is_sell',phone='$phone',code='$code' where gid='{$gid}'"))
+	//                	$content=remsg('修改类别成功！<br/><br/><a href="/admin/gres">>>返回类别列表</a>',1);
+ //            	else
+	//                	$content=remsg('修改类别失败！'.$this->db->_error_message(),4);
+ //        	}
+
+
+ //        	$data['title']='商品管理';
+	// 		$data['content'] = $content;
+	// 		$data['islogin'] = $this->islogin;
+	// 		$data['c'] = 'clist';
+	// 		$this->load->view('admin/gres@editsuc',$data);
+
+	// 	}else{
+	// 		$tools=$this->db->query("SELECT * FROM shua_tools order by tid asc")->result_array();
+	// 		$row=$this->db->query("select * from goods where gid='$gid' limit 1")->row_array();
+	// 		$data['tools']=$tools;
+	// 		$data['row']=$row;
+	// 		$data['gid'] = $gid;
+	// 		$data['title']='商品管理';
+	// 		$data['islogin'] = $this->islogin;
+	// 		$data['c'] = 'clist';
+	// 		$this->load->view('admin/gres@edit',$data);
+	// 	}
+		
+	// }
+
+
+
+	// public function del($gid)
+	// {
+
+	// 	$content="";
+ //    	$sql="DELETE FROM goods WHERE gid='$gid'";
+ //    	if($this->db->query($sql))
+ //        	$content=remsg('删除成功！<br/><br/><a href="/admin/gres">>>返回类别列表</a>',1);
+ //    	else
+	//       	$content=remsg('删除失败！'.$this->db->_error_message(),4);
+
+
+	//     $data['title']='商品管理';
+	//     $data['content'] = $content;
+	// 	$data['islogin'] = $this->islogin;
+	// 	$data['c'] = 'clist';
+	// 	$this->load->view('admin/gres@del',$data);
+	// }
+
+
+}

@@ -1,0 +1,77 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Setwebinfo extends CI_Controller {
+
+	public $islogin = 0;
+
+	public function __construct(){
+		parent::__construct();
+        if(isset($_SESSION['admin_token'])&&$_SESSION['style']==1)
+		{
+			$this->islogin=1;		
+		}else{
+			$this->islogin=0;
+			exit("<script language='javascript'>alert('您还没有登陆！');window.location.href='/admin/login';</script>");
+		}
+	}
+
+	public function index()
+	{
+		$conf = $this->cacheqq->pre_fetch();
+		$this->logs->append($this->db->last_query());
+        $this->logs->save(4);
+
+		$data['title'] = '网站基本信息设置';
+		$data['islogin'] = $this->islogin;
+    	$data['c'] = 'set';
+		$data['conf'] = $conf;
+		$this->load->view('admin/setwebinfo@index',$data);
+	}
+
+	public function set(){
+		$sitename=$_POST['sitename'];
+		$title=$_POST['title'];
+		$keywords=$_POST['keywords'];
+		$description=$_POST['description'];
+		$kfqq=$_POST['kfqq'];
+		$kaurl=$_POST['kaurl'];
+		$anounce=$_POST['anounce'];
+		$modal=$_POST['modal'];
+		$pwd=$_POST['pwd'];
+		saveSetting('sitename',$sitename);
+		$this->logs->append($this->db->last_query());
+		saveSetting('title',$title);
+		$this->logs->append($this->db->last_query());
+		saveSetting('keywords',$keywords);
+		$this->logs->append($this->db->last_query());
+		saveSetting('description',$description);
+		$this->logs->append($this->db->last_query());
+		saveSetting('kfqq',$kfqq);
+		$this->logs->append($this->db->last_query());
+		saveSetting('kaurl',$kaurl);
+		$this->logs->append($this->db->last_query());
+		saveSetting('anounce',$anounce);
+		$this->logs->append($this->db->last_query());
+		saveSetting('modal',$modal);
+		$this->logs->append($this->db->last_query());
+		$this->logs->save(3);
+
+		if(!empty($pwd))saveSetting('admin_pwd',$pwd){
+			$ad=$this->cacheqq->clear();
+			$this->logs->append($this->db->last_query());
+        	$this->logs->save(2);
+		}
+
+		if($ad)
+			$content=remsg('修改成功！',1);
+		else 
+			$content=remsg('修改失败！<br/>'.$DB->error(),4);
+
+		$data['title']='网站基本信息设置';
+		$data['content'] = $content;
+		$data['islogin'] = $this->islogin;
+		$data['c'] = 'set';
+		$this->load->view('admin/setwebinfo@setsuc',$data);
+	}
+}

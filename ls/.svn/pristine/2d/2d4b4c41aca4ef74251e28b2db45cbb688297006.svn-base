@@ -1,0 +1,47 @@
+<?php include VIEWPATH.'admin/__header.php';?>
+<?php 
+if($islogin==1){}else exit("<script language='javascript'>window.location.href='/admin/login';</script>");
+?>
+  <div class="container" style="padding-top:70px;">
+    <div class="col-sm-12 col-md-10 center-block" style="float: none;">
+
+		<div class="panel panel-primary">
+			<div class="panel-heading"><h3 class="panel-title">修改商品信息</h3></div>
+   			<div class="panel-body">
+				<form action="/admin/apigoods/edit/<?php echo $aid;?>" method="POST">
+					<div class="form-group">
+						<label>商品名称:</label><br>
+						<input type="text" class="form-control" name="name" value="<?php echo $row['name'];?>" required>
+					</div>
+					<div class="form-group">
+						<label>价格:</label><br>
+						<input type="text" class="form-control" name="price" value="<?php echo $row['price'];?>" required>
+					</div>
+					<div class="form-group">
+						<label>调用api几级接口:</label><br>
+						<input type="text" class="form-control" name="level" value="<?php echo $row['level'];?>" required>
+					</div>
+
+					<div class="form-group">
+						<label>排序(数字越小越靠前):</label><br>
+						<input type="number" class="form-control" name="sort" value="<?php echo $row['sort'];?>" required>
+					</div>
+					<div class="form-group">
+						<label>是否上架:</label><br>
+						<select class="form-control" name="active" default="<?php echo $row['active'];?>"><option value="1">1_是</option><option value="0">0_否</option></select>
+					</div>
+					<input type="submit" class="btn btn-primary btn-block" value="确定修改">
+				</form>
+				<br/><a href="/admin/apigoods">>>返回商品列表</a>
+			</div>
+		</div>
+
+		<script><!--这个地方控制着是否上架的默认属性-->
+			var items = $("select[default]");
+			for (i = 0; i < items.length; i++) {
+				$(items[i]).val($(items[i]).attr("default"));
+			}
+		</script>
+
+	</div>
+</div>

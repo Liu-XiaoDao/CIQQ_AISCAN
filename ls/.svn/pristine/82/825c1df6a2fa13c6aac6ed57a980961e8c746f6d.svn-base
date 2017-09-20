@@ -1,0 +1,72 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Gmanege extends CI_Controller{
+
+	public $islogin = 0;
+
+	public function __construct(){
+		parent::__construct();
+
+        if(isset($_SESSION['admin_token']))
+		{
+			$this->islogin=1;		
+		}else{
+			$this->islogin=0;
+		}
+
+	}
+
+
+	public function index($page = 1)
+	{
+		$numrows=$this->db->query("SELECT count(*) as numrows from shua_tools")->row()->numrows;
+    	$sql=" 1";
+
+
+    	$page_size=10; //每页显示数量
+        $start=($page-1)*$page_size;//每页从第几条开始
+        $limit=" limit {$start},{$page_size}";//
+		$tools=$this->db->query("SELECT * FROM shua_tools WHERE{$sql} order by sort asc {$limit}")->result_array();
+
+    	//获取分页标记
+        $data['pager'] = $this->get_pager(array(
+            'record_count'  => $numrows,
+            'page_size'     => $page_size,
+            'now_page'     => $page,
+        ));
+
+
+
+
+
+
+  //   	$pagesize=30;
+  //   	$pages=intval($numrows/$pagesize);
+  //   	if ($numrows%$pagesize)
+  //   	{
+  //       	$pages++;
+  //   	}
+  //   	if (isset($_GET['page'])){
+  //   		$page=intval($_GET['page']);
+		// }else{
+  // 			$page=1;
+		// }
+		// $offset=$pagesize*($page - 1);
+
+		// $rs=$DB->query("SELECT * FROM shua_tools WHERE{$sql} order by sort asc");
+		// while($res = $DB->fetch($rs))
+		// {
+		// 	echo '<tr><td><b>'.$res['tid'].'</b></td><td>'.$res['name'].'</td><td>'.$res['num'].'</td><td>'.$res['price'].'</td><td>'.($res['active']==1?'<font color=green>上架中</font>':'<font color=red>已下架</font>').'</td><td><a href="./clist.php?my=edit&tid='.$res['tid'].'" class="btn btn-info btn-xs">编辑</a>&nbsp;<a href="./clist.php?my=delete&tid='.$res['tid'].'" class="btn btn-xs btn-danger" onclick="return confirm(\'你确实要删除此商品吗？\');">删除</a></td></tr>';
+		// }
+
+
+		$data['numrows'] = $numrows;
+		$data['tools'] = $tools;
+		$data['islogin'] = $this->islogin;
+		$data['c'] = 'clist';
+		$this->load->view('admin/gmanege@index',$data);
+	}
+
+
+}

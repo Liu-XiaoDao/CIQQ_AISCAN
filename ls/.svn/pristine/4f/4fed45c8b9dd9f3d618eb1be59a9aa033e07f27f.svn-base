@@ -1,0 +1,123 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Welcome extends CI_Controller {
+
+	
+
+	public function __construct(){
+		parent::__construct();
+
+        if(isset($_SESSION['user'])&&isset($_SESSION['style'])&&$_SESSION['style']===2)
+		{
+			$this->is_user_login=1;		
+		}else{
+			$this->is_user_login=0;
+		}
+
+	}	
+
+	public function index()
+	{
+// 		//获取平台当前各优先级的价格
+// 		// 1. 初始化
+//  		$pricech = curl_init();
+//  		// 2. 设置选项，包括URL
+//  		curl_setopt($pricech,CURLOPT_URL,"http://api.qqhao456.com/api.php?u=18106322292&s=ad7a4274cff7405e547ec4b2e1e5db43&price");
+//  		curl_setopt($pricech,CURLOPT_RETURNTRANSFER,1);
+//  		curl_setopt($pricech,CURLOPT_HEADER,0);
+//  		// 3. 执行并获取HTML文档内容
+//  		$priceoutput = curl_exec($pricech);
+//  		if($priceoutput === FALSE ){
+//  			echo "CURL Error:".curl_error($pricech);
+//  		}
+//  		// 4. 释放curl句柄
+//  		curl_close($pricech);
+
+//  		//获取平台各优先级等待处理的数据数量
+//  		// 1. 初始化
+//  		$countch = curl_init();
+//  		// 2. 设置选项，包括URL
+//  		curl_setopt($countch,CURLOPT_URL,"http://api.qqhao456.com/api.php?u=18106322292&s=ad7a4274cff7405e547ec4b2e1e5db43&wait");
+//  		curl_setopt($countch,CURLOPT_RETURNTRANSFER,1);
+//  		curl_setopt($countch,CURLOPT_HEADER,0);
+//  		// 3. 执行并获取HTML文档内容
+//  		$countoutput = curl_exec($countch);
+//  		if($countoutput === FALSE ){
+//  			echo "CURL Error:".curl_error($countch);
+//  		}
+//  		// 4. 释放curl句柄
+//  		curl_close($countch);
+
+//  		$priceoutput=str_replace("{","[",$priceoutput);
+//  		$priceoutput=str_replace("}","]",$priceoutput);
+
+//  		$countoutput=str_replace("{","[",$countoutput);
+//  		$countoutput=str_replace("}","]",$countoutput);
+
+//  		$pricearray=json_decode($priceoutput);
+//  		$countarray=json_decode($countoutput);
+// print_r($countoutput);
+//  		$price_count=array();
+//  		for($i=0;$i<8;$i++){
+//  			if ($i>=4) {
+//  				$price_count[$i]['price']=$pricearray[$i];
+//  				$price_count[$i]['count']=$countarray[$i];
+//  			}
+//  		}
+
+//  		print_r($price_count);
+//  		exit();
+
+
+
+		$rss=$this->db->query("SELECT * FROM shua_tools WHERE 1 order by sort asc")->result_array();
+		$select='';
+		foreach ($rss as $key => $value) {
+			// $shua_func[$value['tid']]=$value['name'];
+			$select.='<option value="'.$value['tid'].'" price="'.$value['price'].'">'.$value['name'].'---当前库存:'.$value['num'].'</option>';
+		}
+
+		$data['select'] = $select;
+
+
+		$apis=$this->db->query("SELECT * FROM shua_api WHERE 1 order by sort asc")->result_array();
+		$apiselect='';
+		foreach ($apis as $key => $api) {
+			// $shua_func[$api['tid']]=$api['name'];
+			$apiselect.='<option value="'.$api['aid'].'" price="'.$api['price'].'">'.$api['name'].'---该优先级等待处理的数量为:'.rand(10,100).'</option>';
+		}
+
+		$data['apiselect'] = $apiselect;
+
+
+
+
+		$count1=$this->db->query("SELECT count(*) as count1 from shua_orders")->row()->count1;
+
+		$count2=$this->db->query("SELECT count(*) as count2 from shua_orders where status=1")->row()->count2;
+
+		$mysqlversion=$this->db->query("select VERSION() as version")->row()->version;
+
+		$data['count1'] = $count1;
+		$data['count2'] = $count2;
+		$data['mysqlversion'] = $mysqlversion;
+
+
+		$conf = $this->cacheqq->pre_fetch();
+		$data['conf'] = $conf;
+
+
+		//用户登录的逻辑
+
+		if ($this->is_user_login==1) {
+			$data['is_user_login'] = $this->is_user_login;
+			$data['user'] = $_SESSION['user'];
+		} else {
+			$data['is_user_login'] = $this->is_user_login;
+		}
+		
+
+		$this->load->view('welcome',$data);
+	}
+}

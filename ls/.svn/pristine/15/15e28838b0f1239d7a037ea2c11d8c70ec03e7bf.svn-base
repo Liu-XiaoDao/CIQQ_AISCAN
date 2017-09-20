@@ -1,0 +1,51 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Acount extends CI_Controller{
+
+	public $islogin = 0;
+
+	public function __construct(){
+		parent::__construct();
+
+        if(isset($_SESSION['user'])&&isset($_SESSION['style'])&&$_SESSION['style']===2)
+		{
+			$this->islogin=1;		
+		}else{
+			$this->islogin=0;
+		}
+
+	}
+
+
+	public function index()
+	{
+
+		$user = $_SESSION['user'];
+		
+
+
+
+    	$data['user'] = $user;
+		$data['title'] = '充值';
+		$data['islogin'] = $this->islogin;
+    	$data['c'] = 'acount';
+    	$this->load->view('front/acount@index',$data);
+	}
+
+
+	public function detail($trade_no){
+		$ordersql = "select * from shua_pay where trade_no='{$trade_no}' limit 1";
+		$order = $this->db->query($ordersql)->row_array();
+		$qqsql = "select * from trade_qq where trade_no='{$trade_no}'";
+		$qqs = $this->db->query($qqsql)->result_array();
+
+
+		$data['title'] = '订单详情';
+		$data['islogin'] = $this->islogin;
+    	$data['c'] = 'order';
+    	$data['order'] = $order;
+    	$data['qqs'] = $qqs;
+    	$this->load->view('front/order@detail',$data);
+	}
+}

@@ -1,0 +1,243 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Ajax extends CI_Controller {
+
+	
+	public function pay()
+	{
+
+		 $tid=intval($_POST['tid']);
+		 $buynum=intval($_POST['buynum']);
+		 $beizhu=daddslashes($_POST['beizhu']);
+
+		 if (isset($_SESSION['user'])&&isset($_SESSION['style'])&&$_SESSION['style']===2) {
+		 	//查询此类商品是否存在
+		 	$tool=$this->db->query("select * from shua_tools where tid='$tid' limit 1")->row_array();
+		 	if($tool && $tool['active']==1){
+		 		//检查商品库存是否足够
+				if($tool['num']<$buynum)
+		 			exit('{"code":-1,"msg":"库存不足,请联系客服！"}');				
+		 		else
+		 		{
+		 			$uid = $_SESSION['user']['id'];
+		 			$uname = $_SESSION['user']['username'];
+		 			$date = date("Y-m-d H:i:s");
+		 			$need=$tool['price']*$buynum;
+		 			$trade_no=date("YmdHis").rand(111,999);
+
+		 			//插入订单
+		 			$sql="insert into `shua_pay` (`trade_no`,`tid`,`name`,`money`,`uid`,`uname`,`addtime`,`status`,`count`,`info`) values ('".$trade_no."','".$tid."','".$tool['name']."','".$need."','".$uid."','".$uname."','".$date."','0',".$buynum.",'".$beizhu."')";
+		 			$this->db->query($sql);
+
+		 			if ($this->db->affected_rows()) {
+		 				//若订单生成成功,则减少用户的平台余额
+		 				$jaccoutsql = "update users set account=account-{$need} where id='{$uid}'";
+		 				$this->db->query($jaccoutsql);
+
+		 				if ($this->db->affected_rows()) {
+		 					//若是扣款成功,则进行下一步,查号
+		 					$chsql = "select * from goods where tid={$tid} and is_sell=0 limit {$buynum}";
+		 					$qqarray = $this->db->query($chsql)->result_array();
+
+		 					if (count($qqarray)==$buynum) {
+		 						//查询账号成功
+		 						foreach ($qqarray as $key => $qq) {
+		 							//改变qq状态设置为已售
+		 							$is_sellsql = "update goods set is_sell=1 where gid='{$qq['gid']}'";
+		 							$this->db->query($is_sellsql);
+
+		 							//账号加入订单账号表
+		 							$insert_trade_qq="insert into `trade_qq` (`trade_no`,`qqnum`) values('{$trade_no}','{$qq['qqnum']}')";
+		 							$this->db->query($insert_trade_qq);
+
+		 							//该账号类型库存减1
+		 							$stocksql = "update shua_tools set num=num-1 where tid='{$tid}'";
+		 							$this->db->query($stocksql);
+
+		 						}
+
+		 						exit('{"code":0,"msg":"下单成功！","trade_no":"'.$trade_no.'"}');
+
+		 					} else {
+		 						exit('{"code":-1,"msg":"查询出所需数量账号失败！'.$this->db->_error_message().'"}');
+		 					}
+		 					
+		 					
+		 				} else {
+		 					//若是影响行数为0,则用户月减少失败
+		 					exit('{"code":-1,"msg":"用户余额扣款失败！'.$this->db->_error_message().'"}');
+		 				}
+		 				
+		 			} else {
+		 				//若是影响行数为0,则订单生成失败,
+		 				exit('{"code":-1,"msg":"提交订单失败！'.$this->db->_error_message().'"}');
+		 			}
+		 			
+
+		 			// if($this->db->query($sql)){ //感觉重复了
+		 			// 	exit('{"code":0,"msg":"提交订单成功！","trade_no":"'.$trade_no.'","need":"'.$need.'"}');
+		 			// }else{
+		 			// 	exit('{"code":-1,"msg":"提交订单失败！'.$this->db->_error_message().'"}');
+		 			// }
+
+
+
+
+		 		}
+		 	}else{
+		 		exit('{"code":-2,"msg":"该商品不存在"}');
+		 	}
+		 } else {
+		 	exit('{"code":-3,"msg":"请登录后购买"}');
+		 }
+
+		
+	}
+
+
+
+	public function apipay()
+	{
+
+		 $aid=intval($_POST['aid']);
+		 $apiqqs=intval($_POST['apiqqs']);
+		 $apibeizhu=daddslashes($_POST['apibeizhu']);
+
+		 $qqarray = explode(",",$apiqqs);
+		 $buynum = count($qqarray);
+
+
+		 if (isset($_SESSION['user'])&&isset($_SESSION['style'])&&$_SESSION['style']===2) {
+		 	//查询此类商品是否存在
+		 	$apigood=$this->db->query("select * from shua_api where aid='$aid' limit 1")->row_array();
+		 	if($apigood && $apigood['active']==1){
+		 		
+	 			$uid = $_SESSION['user']['id'];
+	 			$uname = $_SESSION['user']['username'];
+	 			$date = date("Y-m-d H:i:s");
+	 			$need=$apigood['price']*$buynum;
+	 			$api_trade_no=date("YmdHis").rand(111,999);
+
+	 			//插入订单
+	 			$sql="insert into `apiorder` (`api_trade_no`,`aid`,`uname`,`money`,`uid`,`qqs`,`addtime`,`status`,`count`,`info`) values ('".$api_trade_no."','".$aid."','".$uname."','".$need."','".$uid."','".$apiqqs."','".$date."','0',".$buynum.",'".$apibeizhu."')";
+	 			$this->db->query($sql);
+
+	 			if ($this->db->affected_rows()) {
+	 				//若订单生成成功,则减少用户的平台余额
+	 				$jaccoutsql = "update users set account=account-{$need} where id='{$uid}'";
+	 				$this->db->query($jaccoutsql);
+
+	 				if ($this->db->affected_rows()) {
+
+	 					$apiusersql = "select * from apiuser where isactive=1 limit 1";
+	 					$apiuser = $this->db->query($apiusersql)->row_array();
+
+
+	 					// 1. 初始化
+ 						$moneych = curl_init();
+ 						// 2. 设置选项，包括URL
+ 						curl_setopt($moneych,CURLOPT_URL,"http://api.qqhao456.com/api.php?u=".$apiuser['username']."&s=".$apiuser['password']."&style="."3"."&level=".$apigood['level']."&data=".$apiqqs);
+ 						curl_setopt($moneych,CURLOPT_RETURNTRANSFER,1);
+ 						curl_setopt($moneych,CURLOPT_HEADER,0);
+ 						// 3. 执行并获取HTML文档内容
+ 						$moneyoutput = curl_exec($moneych);
+ 						if($moneyoutput === FALSE ){
+ 							echo "CURL Error:".curl_error($moneych);
+ 						}
+
+ 						$moneyoutput=str_replace("{","[",$moneyoutput);
+ 						$moneyoutput=str_replace("}","]",$moneyoutput);
+
+
+
+ 						$apiorderarray=json_decode($moneyoutput);
+ 						$api_order="";
+ 						$api_qq_num="";
+ 						$api_qq_money="";
+ 						for ($i=0; $i < 3; $i++) { 
+ 							if ($i=0) {
+ 								$api_order = $apiorderarray[0];
+ 							}
+ 							if ($i=1) {
+ 								$api_qq_num = $apiorderarray[1];
+ 							}
+ 							if ($i=2) {
+ 								$api_qq_money = $apiorderarray[2];
+ 							}
+ 						}
+
+
+ 						//插入订单
+	 					$sql="update apiorder set api_order='{$apiorderarray[0]}',api_qq_num={$api_qq_num},api_qq_money={$api_qq_money},status=1 where api_trade_no='{$api_trade_no}'";
+	 					$this->db->query($sql);
+
+ 						// 4. 释放curl句柄
+ 						curl_close($moneych);
+
+ 						exit('{"code":0,"msg":"下单成功！","api_trade_no":"'.$api_trade_no.'"}');
+
+	 				}
+
+	 			} else {
+	 				//若是影响行数为0,则订单生成失败,
+	 				exit('{"code":-1,"msg":"提交订单失败！'.$this->db->_error_message().'"}');
+	 			}
+	 			
+
+	 			if($this->db->query($sql)){
+	 				exit('{"code":0,"msg":"提交订单成功！","api_trade_no":"'.$trade_no.'","need":"'.$need.'"}');
+	 			}else{
+	 				exit('{"code":-1,"msg":"提交订单失败！'.$this->db->_error_message().'"}');
+	 			}	
+		 	}else{
+		 		exit('{"code":-2,"msg":"该商品不存在"}');
+		 	}
+		 } else {
+		 	exit('{"code":-3,"msg":"请登录后购买"}');
+		 }
+
+		
+	}
+
+
+
+
+
+
+
+
+	// public function query()
+	// {
+	// 	$qq=daddslashes($_POST['qq']);
+
+	// 	$limit=isset($_POST['limit'])?intval($_POST['limit']):10;
+
+	// 	$results=$this->db->query("SELECT * FROM shua_tools WHERE active=1 order by sort asc")->result_array();
+
+	// 	$shua_func = array();
+
+	// 	foreach ($results as $key => $row) {
+	// 		$shua_func[$row['tid']]=$row['name'];
+	// 	}
+
+	// 	// while($res = $DB->fetch($rs)){
+	// 	// 	$shua_func[$res['tid']]=$res['name'];
+	// 	// }
+
+	// 	$orders=$this->db->query("SELECT * FROM shua_orders WHERE qq='{$qq}' order by id desc limit $limit")->result_array();
+	// 	$data = array();
+	// 	foreach ($orders as $key => $order) {
+	// 		$data[]=array('id'=>$order['id'],'tid'=>$order['tid'],'qq'=>$order['qq'],'name'=>$shua_func[$order['tid']],'addtime'=>$order['addtime'],'endtime'=>$order['endtime'],'status'=>$order['status']);
+	// 	}
+
+
+
+	// 	// while($res = $DB->fetch($rs)){
+	// 	// 	$data[]=array('id'=>$res['id'],'tid'=>$res['tid'],'qq'=>$res['qq'],'name'=>$shua_func[$res['tid']],'addtime'=>$res['addtime'],'endtime'=>$res['endtime'],'status'=>$res['status']);
+	// 	// }
+	// 	$result=array("code"=>0,"msg"=>"succ","data"=>$data);
+		
+	// 	exit(json_encode($result));	
+	// }
+}

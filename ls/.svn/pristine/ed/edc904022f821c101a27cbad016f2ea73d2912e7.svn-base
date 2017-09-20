@@ -1,0 +1,72 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Ajax extends CI_Controller {
+
+	
+	public function pay()
+	{
+
+		 $tid=intval($_POST['tid']);
+		 $qq=daddslashes($_POST['qq']);
+		 $buynum=intval($_POST['buynum']);
+		 $beizhu=daddslashes($_POST['beizhu']);
+
+		 $tool=$this->db->query("select * from shua_tools where tid='$tid' limit 1")->row_array();
+		 if($tool && $tool['active']==1){
+
+
+		 	if($tool['num']<$buynum)
+		 		exit('{"code":-1,"msg":"库存不足,请联系客服！"}');				
+		 	else
+		 	{
+		 		$need=$tool['price']*$buynum;
+		 		$trade_no=date("YmdHis").rand(111,999);
+		 		$sql="insert into `shua_pay` (`trade_no`,`tid`,`qq`,`name`,`money`,`addtime`,`status`,`count`,`info`) values ('".$trade_no."','".$tid."','".$qq."','".$tool['name']."','".$need."','".$date."','0',".$buynum.",'".$beizhu."')";
+		 		if($this->db->query($sql)){
+		 			exit('{"code":0,"msg":"提交订单成功！","trade_no":"'.$trade_no.'","need":"'.$need.'"}');
+		 		}else{
+		 			exit('{"code":-1,"msg":"提交订单失败！'.$this->db->_error_message().'"}');
+		 		}
+		 	}
+		 }else{
+		 	exit('{"code":-2,"msg":"该商品不存在"}');
+		 }
+		
+	}
+
+
+	public function query()
+	{
+		$qq=daddslashes($_POST['qq']);
+
+		$limit=isset($_POST['limit'])?intval($_POST['limit']):10;
+
+		$results=$this->db->query("SELECT * FROM shua_tools WHERE active=1 order by sort asc")->result_array();
+
+		$shua_func = array();
+
+		foreach ($results as $key => $row) {
+			$shua_func[$row['tid']]=$row['name'];
+		}
+
+		// while($res = $DB->fetch($rs)){
+		// 	$shua_func[$res['tid']]=$res['name'];
+		// }
+
+		$orders=$this->db->query("SELECT * FROM shua_orders WHERE qq='{$qq}' order by id desc limit $limit")->result_array();
+		$data = array();
+		foreach ($orders as $key => $order) {
+			$data[]=array('id'=>$order['id'],'tid'=>$order['tid'],'qq'=>$order['qq'],'name'=>$shua_func[$order['tid']],'addtime'=>$order['addtime'],'endtime'=>$order['endtime'],'status'=>$order['status']);
+		}
+
+
+
+		// while($res = $DB->fetch($rs)){
+		// 	$data[]=array('id'=>$res['id'],'tid'=>$res['tid'],'qq'=>$res['qq'],'name'=>$shua_func[$res['tid']],'addtime'=>$res['addtime'],'endtime'=>$res['endtime'],'status'=>$res['status']);
+		// }
+		$result=array("code"=>0,"msg"=>"succ","data"=>$data);
+		
+		exit(json_encode($result));	
+	}
+}

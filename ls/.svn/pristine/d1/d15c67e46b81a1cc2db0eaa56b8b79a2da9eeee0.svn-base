@@ -1,0 +1,18 @@
+<?php
+
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+
+class CI_Admincontroller extends CI_Controller {
+
+	public function __construct(){
+		parent::__construct();
+
+		if(!$_SESSION['manager']){
+            header('location:/login');
+            exit;
+        }
+
+	}
+
+}

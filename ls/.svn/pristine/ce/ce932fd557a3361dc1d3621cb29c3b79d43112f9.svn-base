@@ -1,0 +1,47 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Home extends CI_Controller{
+
+	public $islogin = 0;
+
+	public function __construct(){
+		parent::__construct();
+
+        if(isset($_SESSION['user'])&&isset($_SESSION['style'])&&$_SESSION['style']===2)
+		{
+			$this->islogin=1;		
+		}else{
+			$this->islogin=0;
+		}
+
+	}
+
+
+	public function index()
+	{
+		if ($this->islogin=1) {
+			$user = $_SESSION['user'];
+			$uid = $user['id'];
+			$username = $user['username'];
+			//个人最新订单
+			$ordersql = "select * from shua_pay where uid={$uid} and uname = '{$username}' order by addtime desc limit 1";
+			$order = $this->db->query($ordersql)->row_array();
+			if (!empty($order)) {
+				$data['orderinfo'] = 1;
+				$data['order'] = $order;
+			}else{
+				$data['orderinfo'] = 0;
+				// $data['order'] = $order;
+			}
+
+			$data['user'] = $user;
+			$data['title']='个人中心';
+			$data['islogin'] = $this->islogin;
+			$data['c'] = 'home';
+			$this->load->view('front/home@index',$data);
+		}else{
+			header('Location:/front/login');
+		}
+	}
+}

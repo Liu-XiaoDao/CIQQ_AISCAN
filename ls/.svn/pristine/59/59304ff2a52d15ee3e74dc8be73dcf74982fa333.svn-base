@@ -1,0 +1,65 @@
+<?php
+class Logs extends CI_Model {
+    
+    
+
+    //ip
+    public $ip;
+    
+    //ip地区(数组)
+    public $region_arr;
+
+    //地区
+    public $region;
+
+    //添加时间
+    public $add_time;
+
+    //公司id
+    public $company_id;
+
+    //内容
+    public $content;
+
+
+    public function __construct(){
+
+        $this->add_time=time();
+
+    }
+
+
+
+    public function append($content){
+        $this->content.=$content."<br/>";
+    }
+
+    public function save(){
+        $this->company_id=$_SESSION['manager']['company_id'];
+
+        $this->ip=$_SESSION['manager']['last_login_ip'];
+
+        $this->region=$_SESSION['manager']['last_login_region'];
+
+        $this->region=$this->region_arr['country'].($this->region_arr['province'] ? $this->region_arr['province'] : $this->region_arr['region']).$this->region_arr['city'].$this->region_arr['district'].'['.$this->region_arr['isp'].']';
+
+        $insert_data=array(
+            'function_module_id'    =>  MODULE_ID,
+            'function_id'           =>  FUNCTION_ID,
+            'manager_id'            =>  MANAGER_ID,
+            'ip'                    =>  $this->ip,
+            'region'                =>  $this->region,
+            'add_time'              =>  $this->add_time,
+            'content'               =>  addslashes($this->content),
+            'company_id'            =>  $this->company_id,
+        );
+        $this->db->insert('system_logs',$insert_data);
+
+
+    }
+
+    
+
+}
+
+?>

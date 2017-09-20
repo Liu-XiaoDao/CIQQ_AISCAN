@@ -1,0 +1,44 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Regisn extends CI_Controller {
+
+
+	public function index()
+	{
+		$data['title'] = "第一营销用户注册";
+		$this->load->view('front/regisn@index',$data);
+	}
+
+	public function set(){
+		$username=$_POST['username'];
+		$password=md5($_POST['password']);
+		$nick=$_POST['nick'];
+		$age=$_POST['age'];
+		$phone=$_POST['phone'];
+		$mail=$_POST['mail'];
+		$qq=$_POST['qq'];
+
+		// $usersql = "update users set nick='{$nick}',age={$age},phone='{$phone}',mail='{$mail}',qq='{$qq}' where id={$id} and username='{$username}'";
+		$usersql = "insert into users (username,password,nick,age,phone,mail,qq,account,isable) values('$username','$password','$nick',$age,'$phone','$mail','$qq',0,1)";
+
+		$this->db->query($usersql);
+		$this->logs->append($this->db->last_query());
+		$this->logs->save(1);
+
+		
+		if ($this->db->affected_rows()) {
+			$content=remsg('注册成功！<br/><br/><a href="/front/login">>>我要去登陆 GO !</a>',1);
+		}else{
+			$content=remsg('注册失败！<br/>',4);
+		}
+
+			
+
+		$data['title']='用户注册';
+		$data['content'] = $content;
+		$data['c'] = 'pdata';
+		$this->load->view('front/regisn@info',$data);
+	}
+
+}

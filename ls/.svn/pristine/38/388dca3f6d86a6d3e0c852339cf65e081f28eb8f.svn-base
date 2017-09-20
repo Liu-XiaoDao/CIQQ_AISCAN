@@ -1,0 +1,111 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Order extends CI_Controller{
+
+	public $islogin = 0;
+
+	public function __construct(){
+		parent::__construct();
+
+        if(isset($_SESSION['admin_token']))
+		{
+			$this->islogin=1;		
+		}else{
+			$this->islogin=0;
+		}
+
+	}
+
+
+	public function index($page = 1)
+	{
+
+		$shuas=$this->db->query("SELECT * FROM shua_tools WHERE 1 order by sort asc")->result_array();
+		$shua_func = array();
+		$select = "";
+		foreach ($shuas as $key => $shua) {
+			$shua_func[$shua['tid']] = $shua['name'];
+			$select.='<option value="'.$shua['tid'].'">'.$shua['name'].'</option>';
+		}
+
+		$data['shua_func'] = $shua_func;
+		$data['select'] = $select;
+
+
+		$numrows=$this->db->query("SELECT count(*) as numrows from shua_orders")->row()->numrows;
+
+		$ondate=$this->db->query("select count(*) as wcount from shua_orders where status=2")->row()->wcount;
+
+		$sql=" 1";
+		$con='系统共有 <b>'.$numrows.'</b> 个订单，其中已完成的有 <b>'.$ondate.'</b> 个。';
+		$data['con'] = $con;
+		$data['title'] = '订单管理';
+		$data['islogin'] = $this->islogin;
+
+		$pagesize=20;
+    	$pages=intval($numrows/$pagesize);
+    	if ($numrows%$pagesize)
+    	{
+        	$pages++;
+    	}
+    	$offset=$pagesize*($page - 1);
+
+    	$orders=$this->db->query("SELECT * FROM shua_orders WHERE{$sql} order by id desc limit $offset,$pagesize")->result_array();
+
+    	$data['c'] = 'order';
+    	$data['page'] = $page;
+    	$data['pages'] = $pages;
+    	$data['orders'] = $orders;
+    	$this->load->view('admin/order',$data);
+	}
+
+
+	public function query($page = 1)
+	{
+echo $page;
+// exit();
+		$sql = " `qq`=".$_GET['kw'];
+		$shuas=$this->db->query("SELECT * FROM shua_tools WHERE 1 order by sort asc")->result_array();
+		$shua_func = array();
+		$select = "";
+		foreach ($shuas as $key => $shua) {
+			$shua_func[$shua['tid']] = $shua['name'];
+			$select.='<option value="'.$shua['tid'].'">'.$shua['name'].'</option>';
+		}
+		$data['shua_func'] = $shua_func;
+		$data['select'] = $select;
+		$numrows=$this->db->query("SELECT count(*) as numrows from shua_orders WHERE{$sql}")->row()->numrows;
+		$ondate=$this->db->query("select count(*) as wcount from shua_orders where status=2")->row()->wcount;
+		$con='包含 '.$_GET['kw'].' 的共有 <b>'.$numrows.'</b> 个订单';
+		
+		$page_size=10; //每页显示数量
+
+        $start=($page-1)*$page_size;//每页从第几条开始
+
+        $limit=" limit {$start},{$page_size}";//
+
+	
+    	$orders=$this->db->query("SELECT * FROM shua_orders WHERE{$sql} order by id desc {$limit}")->result_array();
+
+
+
+    	//获取分页标记
+        $data['pager'] = $this->get_pager(array(
+            'record_count'  => $numrows,
+            'page_size'     => $page_size,
+            'now_page'     => 3,
+        ));
+
+		$data['shua_func'] = $shua_func;
+		$data['select'] = $select;
+    	$data['con'] = $con;
+		$data['title'] = '订单管理';
+		$data['islogin'] = $this->islogin;
+    	$data['c'] = 'order';
+    	$data['page'] = $page;
+    	// $data['pages'] = $pages;
+    	$data['orders'] = $orders;
+    	$this->load->view('admin/order',$data);
+	}
+}
