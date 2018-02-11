@@ -75,10 +75,10 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => '39.109.7.22',
-	'username' => 'web6981331',
-	'password' => 'ksiJDY45HSy',
-	'database' => 'sqlweb6981331',
+	'hostname' => '127.0.0.1',
+	'username' => 'root',
+	'password' => '123456',
+	'database' => 'phpaiscan',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
