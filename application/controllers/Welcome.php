@@ -17,6 +17,8 @@ class Welcome extends CI_Controller {
 	public function index()
 	{	//商品种类
 		$rss=$this->db->query("SELECT * FROM shua_tools WHERE 1 order by sort asc")->result_array();
+
+		$this->load->library('AipOcr');
 		//插入语句写入数据库
     	$this->logs->append($this->db->last_query());
         $this->logs->save(4);
@@ -54,6 +56,43 @@ class Welcome extends CI_Controller {
 		$data['mysqlversion'] = $mysqlversion;
 		$conf = $this->cacheqq->pre_fetch();
 		$data['conf'] = $conf;
+
+
+
+		
+//识别图片文字
+
+		$url = "http://itmanage.liuxiaodao.top/images/service/201712/65bcabd326d4ff3bbf83ee238a315918.jpg";
+
+		// 调用通用文字识别, 图片参数为远程url图片
+		$this->aipocr->basicGeneralUrl($url);
+
+		// 如果有可选参数
+		$options = array();
+		$options["language_type"] = "CHN_ENG";
+		$options["detect_direction"] = "true";
+		$options["detect_language"] = "true";
+		$options["probability"] = "true";
+
+		// 带参数调用通用文字识别, 图片参数为远程url图片
+		$info = $this->aipocr->basicGeneralUrl($url, $options);
+		$data['ai'] = json_encode($info);
+//发送邮件
+
+		$this->load->library('email');
+		$this->email->from('liu_xiaodao@163.com', 'Chunlaing');
+		$this->email->to('957419420@qq.com');
+
+
+		$this->email->subject('Email Test');
+		$this->email->message('Testing the email class.');
+
+		$this->email->send();
+		echo $this->email->print_debugger();
+
+
+
+
 
 		//用户登录的逻辑
 		if ($this->is_user_login==1) {

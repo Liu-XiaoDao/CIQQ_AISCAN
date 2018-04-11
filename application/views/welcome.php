@@ -90,6 +90,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 					</font>
 				</h3>
 			</div>
+			<?php echo $ai ?>
 			<div class="list-group-item reed">
 				<marquee scrollAmount="8" direction="left" Align="Middle" style="font-weight: bold;line-height: 20px;font-size: 20px;color: #177D06;"><?php echo $conf['marquee']?></marquee>
 			</div>
